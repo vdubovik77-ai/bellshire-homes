@@ -6085,11 +6085,38 @@ function aiRealtimeDisconnect() {
   var raf = null;
   var useTranslate = window.CSS && CSS.supports && CSS.supports('translate', '0px 1px');
 
-  // Ensure video never auto-plays, is fully muted, force-preload
-  vid.autoplay = false;
+  // Base video config
   vid.muted    = true;
   vid.preload  = 'auto';
-  vid.pause();
+  vid.setAttribute('playsinline', '');
+  vid.setAttribute('webkit-playsinline', '');
+
+  // On desktop the video is scrubbed by scroll progress → start paused.
+  // On mobile the sticky track collapses (height:auto) → use slow auto-play loop instead.
+  var isMobileLayout = window.innerWidth <= 1024;
+  if (isMobileLayout) {
+    vid.loop = true;
+    vid.autoplay = true;
+    try { vid.playbackRate = 0.5; } catch(e) {}   // slow, cinematic feel
+    var tryPlay = function() { vid.play().catch(function() {}); };
+    if (vid.readyState >= 2) tryPlay();
+    vid.addEventListener('loadedmetadata', tryPlay);
+    vid.addEventListener('canplay', tryPlay);
+    // Pause when off-screen (battery / data saver)
+    if ('IntersectionObserver' in window) {
+      var vidObs = new IntersectionObserver(function(entries) {
+        entries.forEach(function(e) {
+          if (e.isIntersecting) tryPlay();
+          else vid.pause();
+        });
+      }, { threshold: 0.1 });
+      vidObs.observe(vid);
+    }
+  } else {
+    vid.autoplay = false;
+    vid.loop     = false;
+    vid.pause();
+  }
 
   // GPU acceleration on the WHOLE block (not children) so layout stays intact
   if (content) {
