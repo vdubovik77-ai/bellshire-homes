@@ -101,7 +101,12 @@
       "Bash(curl -s --max-time 2 -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3001/index.html)",
       "Bash(curl -s --max-time 8 -o /dev/null -w 'HTTP %{http_code}  |  size: %{size_download} bytes\\\\n' https://bob-journalism-lafayette-historical.trycloudflare.com/)",
       "Bash(curl -s --max-time 8 -o /dev/null -w 'HTTP %{http_code}  |  size: %{size_download} bytes\\\\n' https://settings-fwd-definitely-diy.trycloudflare.com/)",
-      "Bash(curl -s --max-time 5 -X OPTIONS -H 'Origin: https://settings-fwd-definitely-diy.trycloudflare.com' -H 'Access-Control-Request-Method: POST' -o /dev/null -w 'HTTP %{http_code}\\\\n' https://utilize-institutes-circle-determination.trycloudflare.com/conversation/save)"
+      "Bash(curl -s --max-time 5 -X OPTIONS -H 'Origin: https://settings-fwd-definitely-diy.trycloudflare.com' -H 'Access-Control-Request-Method: POST' -o /dev/null -w 'HTTP %{http_code}\\\\n' https://utilize-institutes-circle-determination.trycloudflare.com/conversation/save)",
+      "Bash(curl -s --max-time 10 -o /dev/null -w 'HTTP %{http_code}  |  size: %{size_download}  |  type: %{content_type}\\\\n' https://settings-fwd-definitely-diy.trycloudflare.com/hero-new.mp4)",
+      "Bash(curl -s --max-time 5 -r 0-31 https://settings-fwd-definitely-diy.trycloudflare.com/hero-new.mp4)",
+      "Bash(xxd)",
+      "Bash(ffmpeg -hide_banner -loglevel error -y -i hero-new.mp4 -vf 'scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:\\(ow-iw\\)/2:\\(oh-ih\\)/2' -c:v libx264 -preset slow -crf 23 -b:v 2500k -maxrate 3000k -bufsize 4000k -pix_fmt yuv420p -movflags +faststart -an hero-web.mp4)",
+      "Bash(ffmpeg -hide_banner -loglevel error -y -i /Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/bellshire-fonts-test/bellshirehomes/hero-new.mp4 -c copy -movflags +faststart /tmp/hero-new-faststart.mp4)"
     ]
   }
 }
