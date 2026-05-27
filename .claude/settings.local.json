@@ -115,7 +115,11 @@
       "Bash(cp '/Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/Сайт Bellshire Homes/images/alexandra.png' __TRACKED_VAR__/images/alexandra.png)",
       "Bash(sed -i '' 's|\\\\.\\\\./images/alexandra\\\\.png|images/alexandra.png|g' __TRACKED_VAR__/index.html)",
       "Bash(curl -s --max-time 8 -o /dev/null -w 'MAIN:   HTTP %{http_code}  |  size: %{size_download}\\\\n' https://bob-journalism-lafayette-historical.trycloudflare.com/images/alexandra.png?cb=__CMDSUB_OUTPUT__)",
-      "Bash(curl -s --max-time 8 -o /dev/null -w 'FONTS:  HTTP %{http_code}  |  size: %{size_download}\\\\n' https://settings-fwd-definitely-diy.trycloudflare.com/images/alexandra.png?cb=__CMDSUB_OUTPUT__)"
+      "Bash(curl -s --max-time 8 -o /dev/null -w 'FONTS:  HTTP %{http_code}  |  size: %{size_download}\\\\n' https://settings-fwd-definitely-diy.trycloudflare.com/images/alexandra.png?cb=__CMDSUB_OUTPUT__)",
+      "Bash(curl -s --max-time 5 -o /dev/null -w 'GET /         : HTTP %{http_code}  |  size: %{size_download}\\\\n' https://utilize-institutes-circle-determination.trycloudflare.com/)",
+      "Bash(curl -s --max-time 5 -o /dev/null -w 'GET /health   : HTTP %{http_code}  |  size: %{size_download}\\\\n' https://utilize-institutes-circle-determination.trycloudflare.com/health)",
+      "Bash(curl -s --max-time 5 -o /dev/null -w 'GET /docs     : HTTP %{http_code}  |  size: %{size_download}\\\\n' https://utilize-institutes-circle-determination.trycloudflare.com/docs)",
+      "Bash(curl -s --max-time 5 https://utilize-institutes-circle-determination.trycloudflare.com/health)"
     ]
   }
 }
