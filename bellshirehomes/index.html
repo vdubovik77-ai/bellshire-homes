@@ -6097,7 +6097,7 @@ function aiRealtimeDisconnect() {
   if (isMobileLayout) {
     vid.loop = true;
     vid.autoplay = true;
-    try { vid.playbackRate = 0.5; } catch(e) {}   // slow, cinematic feel
+    try { vid.playbackRate = 1.0; } catch(e) {}   // normal speed
     var tryPlay = function() { vid.play().catch(function() {}); };
     if (vid.readyState >= 2) tryPlay();
     vid.addEventListener('loadedmetadata', tryPlay);
