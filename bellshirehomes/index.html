@@ -92,13 +92,17 @@
     text-transform: none !important;
   }
 
-  /* ───── Property status badges (AVAILABLE FOR PRESALE, FOR SALE, SOLD…) ─────
-     Use the display serif (Butler) — same as "Explore Our Properties" title.   */
+  /* ───── Property status badges — match "Explore Our Properties" Butler style ─────
+     Same font + mixed case + normal letter-spacing so the serif character
+     of Butler is clearly visible (serifs invisible at 12px uppercase).         */
   body .property-status {
     font-family: var(--font-display) !important;
     font-weight: 700 !important;
     font-style: normal !important;
-    letter-spacing: 0.04em !important;
+    font-size: 0.95rem !important;       /* bumped from 0.6rem so serifs are visible */
+    letter-spacing: 0.005em !important;
+    text-transform: none !important;     /* mixed case shows serifs */
+    padding: 0.35rem 0.95rem !important;
   }
 
   /* ───── Smooth per-element parallax for featured property card ─────
