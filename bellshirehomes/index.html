@@ -81,6 +81,33 @@
     text-transform: uppercase;
   }
 
+  /* ───── Hero size bump (experiment) ───── */
+  .hero-title {
+    font-size: clamp(3.5rem, 9vw, 8rem) !important;
+    line-height: 1.02 !important;
+    font-weight: 700 !important;
+  }
+  .hero-subtitle {
+    font-size: clamp(1.05rem, 1.4vw, 1.35rem) !important;
+    line-height: 1.65 !important;
+    max-width: 620px !important;
+  }
+  .hero-eyebrow,
+  .hero .section-label {
+    font-size: 0.85rem !important;
+    letter-spacing: 0.32em !important;
+  }
+
+  /* ───── Force all italics to roman/upright ───── */
+  em, i,
+  .hero-title em,
+  .section-title em,
+  .pg-title em,
+  [style*="font-style: italic"],
+  [style*="font-style:italic"] {
+    font-style: normal !important;
+  }
+
   :root {
     --charcoal: #2E3134;
     --charcoal-deep: #1E2023;
