@@ -2142,9 +2142,51 @@
 .ai-success-close:hover { background:#3d8a82; }
 
 @media (max-width:768px) {
-  .ai-modal { grid-template-columns:1fr; grid-template-rows:1fr 280px; max-height:95vh; }
-  .ai-setup { grid-column:1; padding:1.2rem; }
-  .ai-float-btn { bottom:1.2rem; right:1.2rem; padding:.75rem 1.1rem; font-size:.72rem; }
+  /* AI modal: full-screen on mobile, chat-only (form panel hidden) */
+  .ai-modal-overlay { padding: 0 !important; }
+  .ai-modal {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto 1fr !important;
+    max-width: 100vw !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    border: none !important;
+  }
+  /* Header — single line, smaller, with ellipsis if overflow */
+  .ai-modal-header {
+    padding: .55rem .8rem !important;
+  }
+  .ai-modal-header-title,
+  body .ai-modal-header-title {
+    font-size: .56rem !important;
+    letter-spacing: .12em !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: calc(100vw - 70px) !important;
+  }
+  .ai-modal-header-close {
+    width: 34px !important; height: 34px !important;
+    flex-shrink: 0;
+  }
+  /* Form panel: hidden on mobile — fields still get auto-filled via JS,
+     user can review them after submitting via the success screen.       */
+  .ai-right { display: none !important; }
+  .ai-left { grid-column: 1 / -1 !important; border-right: none !important; }
+  /* Setup screen: full available height */
+  .ai-setup { grid-column: 1 / -1 !important; padding: 1.4rem 1.2rem !important; }
+  .ai-setup-card h3 { font-size: 1.3rem !important; }
+  .ai-setup-card p { font-size: .82rem !important; }
+  /* Avatar bar — compact */
+  .ai-avatar-bar { padding: .8rem 1rem !important; gap: .8rem !important; }
+  .ai-avatar-ring { width: 44px !important; height: 44px !important; }
+  /* Hide the floating AI Consultation button while any modal is open */
+  body:has(.ai-modal-overlay.open) .ai-float-btn,
+  body:has(.ai-voice-overlay.open) .ai-float-btn { display: none !important; }
+  /* Compact floating button when visible */
+  .ai-float-btn { bottom: 1rem !important; right: 1rem !important; padding: .65rem 1rem !important; font-size: .68rem !important; }
 }
 
 /* ══════════════════════════════════════
