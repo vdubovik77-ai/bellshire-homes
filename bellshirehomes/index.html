@@ -105,27 +105,24 @@
     padding: 0.35rem 0.95rem !important;
   }
 
-  /* ───── Smooth per-element parallax for featured property card ─────
-     CSS `translate` is updated via JS; we just add subtle smoothing so
-     scroll-driven motion has buttery momentum on touch devices.            */
-  #featured-parallax-content #featured-badge,
-  #featured-parallax-content .featured-label-hero,
-  #featured-parallax-content #featured-price,
-  #featured-parallax-content .featured-price,
-  #featured-parallax-content #featured-address,
-  #featured-parallax-content .featured-address,
-  #featured-parallax-content #featured-city,
-  #featured-parallax-content .featured-city,
-  #featured-parallax-content #featured-stats,
-  #featured-parallax-content .featured-stats,
-  #featured-parallax-content .btn-primary {
+  /* ───── Smooth block-parallax for featured property text layer ─────
+     The whole #featured-parallax-content moves as ONE layer above the image.
+     Children must NOT have their own transforms or transitions —
+     that would cause them to drift apart and overlap each other.           */
+  #featured-parallax-content {
     transition: translate 0.12s linear, transform 0.12s linear;
     will-change: translate, transform;
-    transform: translateZ(0);
     backface-visibility: hidden;
   }
+  /* Reset any leftover per-child transforms (from earlier parallax experiment) */
+  #featured-parallax-content > * {
+    translate: 0 !important;
+    transform: none !important;
+    transition: none !important;
+    will-change: auto !important;
+  }
   @media (prefers-reduced-motion: reduce) {
-    #featured-parallax-content > * {
+    #featured-parallax-content {
       transition: none !important;
       translate: 0 !important;
       transform: none !important;
@@ -6054,7 +6051,8 @@ function aiRealtimeDisconnect() {
   update();
 })();
 
-// ===== SCROLL-DRIVEN VIDEO + PER-ELEMENT PARALLAX =====
+// ===== SCROLL-DRIVEN VIDEO + BLOCK PARALLAX =====
+// Text block moves as ONE layer above the image — children never drift apart.
 (function() {
   var track   = document.getElementById('featured-scroll-track');
   var vid     = document.getElementById('featured-scroll-video');
@@ -6070,32 +6068,29 @@ function aiRealtimeDisconnect() {
   vid.preload  = 'auto';
   vid.pause();
 
-  // Per-element parallax depths — slow (badge) → fast (stats/CTA)
-  // The visual order top-to-bottom matches the depth order, so layered drift feels organic.
-  var parallaxLayers = [];
+  // GPU acceleration on the WHOLE block (not children) so layout stays intact
   if (content) {
-    var badge   = content.querySelector('#featured-badge') || content.querySelector('.featured-label-hero');
-    var price   = content.querySelector('#featured-price') || content.querySelector('.featured-price');
-    var addr    = content.querySelector('#featured-address') || content.querySelector('.featured-address');
-    var city    = content.querySelector('#featured-city') || content.querySelector('.featured-city');
-    var stats   = content.querySelector('#featured-stats') || content.querySelector('.featured-stats');
-    var cta     = content.querySelector('.btn-primary');
-    if (badge) parallaxLayers.push({ el: badge, depth: 0.18 });
-    if (price) parallaxLayers.push({ el: price, depth: 0.26 });
-    if (addr)  parallaxLayers.push({ el: addr,  depth: 0.30 });
-    if (city)  parallaxLayers.push({ el: city,  depth: 0.32 });
-    if (stats) parallaxLayers.push({ el: stats, depth: 0.40 });
-    if (cta)   parallaxLayers.push({ el: cta,   depth: 0.46 });
-    // GPU-acceleration hint for buttery-smooth rendering on mobile
-    parallaxLayers.forEach(function(it) {
-      it.el.style.willChange = useTranslate ? 'translate' : 'transform';
-      it.el.style.backfaceVisibility = 'hidden';
-    });
+    content.style.willChange = useTranslate ? 'translate' : 'transform';
+    content.style.backfaceVisibility = 'hidden';
+    // Clear any per-child translates left from previous attempts
+    ['#featured-badge','#featured-price','#featured-address','#featured-city','#featured-stats']
+      .forEach(function(sel) {
+        var el = content.querySelector(sel);
+        if (el) {
+          el.style.removeProperty('translate');
+          el.style.removeProperty('transform');
+          el.style.removeProperty('will-change');
+        }
+      });
+    var ctaEl = content.querySelector('.btn-primary');
+    if (ctaEl) {
+      ctaEl.style.removeProperty('translate');
+      ctaEl.style.removeProperty('transform');
+      ctaEl.style.removeProperty('will-change');
+    }
   }
 
-  // Detect whether the sticky-track parallax is active (desktop only).
-  // On mobile (≤1024px), the track is `height: auto` so we fall back to
-  // a viewport-rect-based parallax that uses the content's position on screen.
+  // Desktop (>1024px): track is 350vh + sticky → use progress through track
   function isStickyTrackActive() {
     return track.offsetHeight > window.innerHeight * 1.2;
   }
@@ -6109,43 +6104,13 @@ function aiRealtimeDisconnect() {
     return Math.max(0, Math.min(1, scrolled / total));
   }
 
-  // Mobile parallax: returns a -1..1 value based on content position relative to viewport center.
-  // -1 = content is below viewport (just entering), 0 = centered, +1 = content has exited above.
+  // Mobile (≤1024px): bidirectional position-in-viewport progress (-1..+1)
   function getViewportProgress() {
     if (!content) return 0;
     var rect = content.getBoundingClientRect();
     var vpH  = window.innerHeight;
     var center = rect.top + rect.height / 2;
     return Math.max(-1, Math.min(1, (vpH / 2 - center) / vpH));
-  }
-
-  function applyProgress() {
-    raf = null;
-    var vpH = window.innerHeight;
-    var sticky = isStickyTrackActive();
-    var progress = sticky ? getStickyProgress() : 0;
-
-    // Seek video — only when sticky-track is active (desktop)
-    if (sticky && vid.readyState >= 1 && vid.duration) {
-      vid.currentTime = progress * vid.duration;
-    }
-
-    // Per-element parallax — different formula per mode
-    if (sticky) {
-      // Desktop: drift up as user scrolls through the 350vh track
-      parallaxLayers.forEach(function(item) {
-        var offset = -progress * vpH * item.depth;
-        applyOffset(item.el, offset);
-      });
-    } else {
-      // Mobile: drift based on content's position in viewport (bidirectional, organic)
-      var vp = getViewportProgress();   // -1 → 0 → +1
-      parallaxLayers.forEach(function(item) {
-        // Amplitude small enough to feel refined on small screens (~ depth * 80px max)
-        var offset = vp * 80 * item.depth;
-        applyOffset(item.el, offset);
-      });
-    }
   }
 
   function applyOffset(el, offset) {
@@ -6156,6 +6121,26 @@ function aiRealtimeDisconnect() {
     }
   }
 
+  function applyProgress() {
+    raf = null;
+    if (!content) return;
+
+    var vpH = window.innerHeight;
+    var sticky = isStickyTrackActive();
+
+    // Sync video to scroll progress on desktop only
+    if (sticky) {
+      var p = getStickyProgress();
+      if (vid.readyState >= 1 && vid.duration) vid.currentTime = p * vid.duration;
+      // Move whole block UP at 35% scroll speed
+      applyOffset(content, -p * vpH * 0.35);
+    } else {
+      // Mobile: subtle bidirectional drift of the WHOLE block
+      var vp = getViewportProgress();        // -1 → 0 → +1
+      applyOffset(content, vp * 70);          // max ~70px drift, smooth & contained
+    }
+  }
+
   function scheduleSeek() {
     if (raf) cancelAnimationFrame(raf);
     raf = requestAnimationFrame(applyProgress);
@@ -6163,8 +6148,6 @@ function aiRealtimeDisconnect() {
 
   window.addEventListener('scroll', scheduleSeek, { passive: true });
   window.addEventListener('resize', scheduleSeek, { passive: true });
-
-  // Sync as soon as metadata arrives
   vid.addEventListener('loadedmetadata', applyProgress);
 
   // Initial call in case section is already in view on load
