@@ -4,24 +4,47 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bellshire Homes — Luxury Living in Bellevue</title>
+<!-- ▼ martinbuilding.com fonts: Butler (display serif) + General Sans (Maison-equivalent) ▼ -->
+<link rel="stylesheet" href="https://fonts.cdnfonts.com/css/butler">
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f%5B%5D=general-sans@300,400,500,600,700&display=swap">
+<!-- Fallback fonts kept for safety/comparison -->
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Inter:wght@300;400;500;600&family=Montserrat:wght@300;400;500;600&family=Outfit:wght@200;300;400;500;600&display=swap" rel="stylesheet">
 <link rel="preload" href="hero-new.mp4" as="video" type="video/mp4">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
   /* ═══════════════════════════════════════════════════════════
-     FONTS EXPERIMENT — martinbuilding.com typography system
-     - Display: Cormorant Garamond (unchanged)
-     - Body:    Inter (replaces Outfit)
-     - Labels:  Montserrat for uppercase + letter-spacing labels
+     FONTS EXPERIMENT v2 — Faithful martinbuilding.com typography
+     - Display: Butler, serif (weight 700) — same as martinbuilding
+     - Body/Labels: General Sans (Maison-equivalent, weight 400-500)
+     - Labels use letter-spacing: 0.3em (matches martinbuilding 4px @ 12-14px)
      ═══════════════════════════════════════════════════════════ */
   :root {
-    --font-body:    'Inter', sans-serif;
-    --font-label:   'Montserrat', sans-serif;
-    --font-display: 'Cormorant Garamond', serif;
+    --font-display: 'Butler', 'Cormorant Garamond', serif;
+    --font-body:    'General Sans', 'Inter', sans-serif;
+    --font-label:   'General Sans', 'Montserrat', sans-serif;
   }
 
-  /* Apply Montserrat to all uppercase labels/eyebrows */
+  /* Override everything that previously used Cormorant Garamond / Inter / Montserrat / Outfit */
+  body, body * {
+    font-family: var(--font-body);
+  }
+
+  /* All Cormorant Garamond elements → Butler */
+  [style*="Cormorant"],
+  h1, h2, h3,
+  .hero-title, .section-title, .property-title, .feature-title,
+  .property-card-title, .about-title, .featured-title,
+  .step-title, .contact-title, .ai-form-title, .ai-name,
+  .ai-success-card h3, .ai-setup-card h3,
+  .ai-modal-header-title em, .ai-voice-title em,
+  em {
+    font-family: var(--font-display) !important;
+    font-weight: 700;
+    letter-spacing: -0.005em;
+  }
+
+  /* Uppercase labels/eyebrows — apply martinbuilding's wide tracking (4px @ 12px ≈ 0.3em) */
   .section-label,
   .ai-form-eyebrow,
   .ai-field-lbl,
@@ -38,9 +61,24 @@
   .step-num,
   .footer-eyebrow,
   .footer-bottom,
+  .ai-setup-field label,
+  .ai-input-label,
+  .ai-voice-input-label,
   [class*="eyebrow"],
   [class*="-label"] {
     font-family: var(--font-label) !important;
+    font-weight: 400 !important;
+    letter-spacing: 0.3em !important;
+    text-transform: uppercase;
+  }
+
+  /* CTA buttons — match martinbuilding wide-tracked uppercase */
+  .btn-primary, .btn-secondary, .ai-launch-btn, .ai-submit-btn,
+  button.cta, .schedule-btn, .view-btn, .hero-cta-row a {
+    font-family: var(--font-label) !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.2em !important;
+    text-transform: uppercase;
   }
 
   :root {
@@ -66,7 +104,7 @@
   }
 
   body {
-    font-family: 'Inter', sans-serif;
+    font-family: 'General Sans', 'Inter', sans-serif;
     font-weight: 300;
     color: var(--text-primary);
     background: var(--warm-white);
@@ -84,7 +122,7 @@
   .preloader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
   .preloader-logo {
     color: var(--teal);
-    font-family: 'Inter', sans-serif;
+    font-family: 'General Sans', 'Inter', sans-serif;
     font-weight: 600;
     font-size: 2.2rem;
     letter-spacing: 0.3em;
@@ -114,7 +152,7 @@
     transition: width 0.4s ease;
   }
   .preloader-text {
-    font-family: 'Inter', sans-serif;
+    font-family: 'General Sans', 'Inter', sans-serif;
     font-size: 0.55rem;
     letter-spacing: 0.35em;
     text-transform: uppercase;
@@ -149,7 +187,7 @@
   }
   .logo-icon svg { width: 100%; height: 100%; }
   .logo-text {
-    font-family: 'Inter', sans-serif;
+    font-family: 'General Sans', 'Inter', sans-serif;
     font-weight: 600;
     font-size: 1.15rem;
     letter-spacing: 0.25em;
@@ -162,7 +200,7 @@
     object-fit: contain;
   }
   .logo-sub {
-    font-family: 'Inter', sans-serif;
+    font-family: 'General Sans', 'Inter', sans-serif;
     font-weight: 300;
     font-size: 0.55rem;
     letter-spacing: 0.45em;
@@ -285,7 +323,7 @@
     background: var(--teal);
   }
   .hero-title {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Butler', 'Cormorant Garamond', serif;
     font-weight: 300;
     font-size: clamp(3rem, 6.5vw, 6.5rem);
     line-height: 1.05;
@@ -403,7 +441,7 @@
     background: var(--teal);
   }
   .section-title {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Butler', 'Cormorant Garamond', serif;
     font-weight: 300;
     font-size: clamp(2.2rem, 4vw, 3.8rem);
     line-height: 1.15;
@@ -487,7 +525,7 @@
 
   /* "FOR SALE" label styled like hero italic serif */
   .featured-label-hero {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Butler', 'Cormorant Garamond', serif;
     font-style: italic;
     font-weight: 400;
     font-size: clamp(1.3rem, 2.2vw, 2rem);
@@ -498,7 +536,7 @@
   }
 
   .featured-overlay-content .featured-price {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Butler', 'Cormorant Garamond', serif;
     font-size: clamp(2rem, 4vw, 3.2rem);
     font-weight: 300;
     color: white;
@@ -506,7 +544,7 @@
     line-height: 1.1;
   }
   .featured-overlay-content .featured-address {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Butler', 'Cormorant Garamond', serif;
     font-size: clamp(1.1rem, 2vw, 1.6rem);
     font-weight: 400;
     color: rgba(255,255,255,0.9);
@@ -535,7 +573,7 @@
     padding-left: 0;
   }
   .featured-overlay-content .stat-value {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Butler', 'Cormorant Garamond', serif;
     font-size: 1.6rem;
     font-weight: 400;
     color: white;
@@ -580,14 +618,14 @@
     padding: 5rem;
   }
   .featured-price {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Butler', 'Cormorant Garamond', serif;
     font-size: 2.8rem;
     font-weight: 300;
     color: var(--teal);
     margin-bottom: 0.5rem;
   }
   .featured-address {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Butler', 'Cormorant Garamond', serif;
     font-size: 1.8rem;
     font-weight: 400;
     color: white;
@@ -610,7 +648,7 @@
     border-top: 1px solid rgba(255,255,255,0.08);
   }
   .stat-value {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Butler', 'Cormorant Garamond', serif;
     font-size: 2rem;
     font-weight: 400;
     color: white;
@@ -699,7 +737,7 @@
     border-bottom: 1px solid rgba(255,255,255,0.06);
   }
   .pg-title {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Butler', 'Cormorant Garamond', serif;
     font-size: 1.4rem; font-weight: 400;
     color: white;
   }
@@ -746,14 +784,14 @@
     background: var(--charcoal);
   }
   .property-price {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Butler', 'Cormorant Garamond', serif;
     font-size: 1.6rem;
     font-weight: 500;
     color: var(--teal);
     margin-bottom: 0.3rem;
   }
   .property-name {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Butler', 'Cormorant Garamond', serif;
     font-size: 1.2rem;
     font-weight: 500;
     color: rgba(255,255,255,0.92);
@@ -893,7 +931,7 @@
   }
   .about-number {
     position: absolute; bottom: 3rem; right: 0;
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Butler', 'Cormorant Garamond', serif;
     font-size: 8rem;
     font-weight: 300;
     color: var(--teal);
@@ -958,7 +996,7 @@
     background: rgba(255,255,255,0.03);
   }
   .service-num {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Butler', 'Cormorant Garamond', serif;
     font-size: 3rem;
     font-weight: 300;
     color: var(--teal);
@@ -968,7 +1006,7 @@
   }
   .service-card:hover .service-num { opacity: 0.7; }
   .service-name {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Butler', 'Cormorant Garamond', serif;
     font-size: 1.4rem;
     font-weight: 400;
     color: white;
@@ -994,7 +1032,7 @@
   }
   .step::before {
     content: counter(step, decimal-leading-zero);
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Butler', 'Cormorant Garamond', serif;
     font-size: 4.5rem;
     font-weight: 300;
     color: var(--teal);
@@ -1004,7 +1042,7 @@
     margin-bottom: 1.5rem;
   }
   .step-title {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Butler', 'Cormorant Garamond', serif;
     font-size: 1.5rem;
     font-weight: 400;
     margin-bottom: 0.8rem;
@@ -1052,7 +1090,7 @@
     background: transparent;
     border: none;
     color: var(--text-light);
-    font-family: 'Inter', sans-serif;
+    font-family: 'General Sans', 'Inter', sans-serif;
     font-size: 0.7rem;
     font-weight: 400;
     letter-spacing: 0.15em;
@@ -1113,7 +1151,7 @@
   .map-listing-status.sold { background: rgba(255,255,255,0.1); color: var(--text-light); }
   .map-listing-status.presale { background: var(--gold-accent); color: var(--charcoal); }
   .map-listing-name {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Butler', 'Cormorant Garamond', serif;
     font-size: 1.05rem;
     font-weight: 500;
     color: white;
@@ -1134,7 +1172,7 @@
     color: rgba(255,255,255,0.45);
   }
   .map-listing-price {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Butler', 'Cormorant Garamond', serif;
     font-size: 1.1rem;
     font-weight: 500;
     color: var(--teal);
@@ -1198,7 +1236,7 @@
   .popup-card-status.sold { background: rgba(255,255,255,0.1); color: var(--text-light); }
   .popup-card-status.presale { background: var(--gold-accent); color: var(--charcoal); }
   .popup-card-name {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Butler', 'Cormorant Garamond', serif;
     font-size: 1.2rem;
     font-weight: 500;
     color: white;
@@ -1210,7 +1248,7 @@
     margin-bottom: 0.5rem;
   }
   .popup-card-price {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Butler', 'Cormorant Garamond', serif;
     font-size: 1.35rem;
     color: var(--teal);
     font-weight: 500;
@@ -1466,7 +1504,7 @@
     margin-bottom: 0.5rem;
   }
   .contact-detail-value {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Butler', 'Cormorant Garamond', serif;
     font-size: 1.3rem;
     font-weight: 400;
   }
@@ -1493,7 +1531,7 @@
     border: none;
     border-bottom: 1px solid var(--border-subtle);
     background: transparent;
-    font-family: 'Inter', sans-serif;
+    font-family: 'General Sans', 'Inter', sans-serif;
     font-size: 0.85rem;
     font-weight: 300;
     color: var(--text-primary);
@@ -1519,7 +1557,7 @@
     background: var(--charcoal-deep);
     color: white;
     border: none;
-    font-family: 'Inter', sans-serif;
+    font-family: 'General Sans', 'Inter', sans-serif;
     font-size: 0.78rem;
     font-weight: 500;
     letter-spacing: 0.15em;
@@ -1633,7 +1671,7 @@
   .mobile-overlay a {
     display: block;
     padding: 1rem 2rem;
-    font-family: 'Inter', sans-serif;
+    font-family: 'General Sans', 'Inter', sans-serif;
     font-size: 1.1rem;
     font-weight: 400;
     color: rgba(255,255,255,0.7);
@@ -1649,7 +1687,7 @@
     padding: 0.9rem 2.5rem;
     background: var(--teal);
     color: white !important;
-    font-family: 'Inter', sans-serif;
+    font-family: 'General Sans', 'Inter', sans-serif;
     font-size: 0.78rem;
     font-weight: 500;
     letter-spacing: 0.15em;
@@ -1798,7 +1836,7 @@
 }
 .ai-modal-header-title {
   font-size: .72rem; letter-spacing: .15em; text-transform: uppercase;
-  color: rgba(255,255,255,.35); font-family: 'Inter', sans-serif;
+  color: rgba(255,255,255,.35); font-family: 'General Sans', 'Inter', sans-serif;
   display: flex; align-items: center; gap: .5rem;
 }
 .ai-modal-header-dot { width:7px; height:7px; border-radius:50%; background:#4a9e95; animation:pulse 2s infinite; }
@@ -1848,7 +1886,7 @@
   animation: aiSpeakRing 1.2s ease infinite;
 }
 @keyframes aiSpeakRing { 0%,100%{transform:scale(1);opacity:.6} 50%{transform:scale(1.08);opacity:.2} }
-.ai-name { font-family:'Cormorant Garamond',serif; font-size:1.1rem; font-weight:300; }
+.ai-name { font-family:'Butler','Cormorant Garamond',serif; font-size:1.1rem; font-weight:300; }
 .ai-title { font-size:.65rem; letter-spacing:.12em; text-transform:uppercase; color:#4a9e95; }
 .ai-status { font-size:.72rem; color:rgba(255,255,255,.35); display:flex; align-items:center; gap:.35rem; margin-top:.2rem; }
 .ai-dot { width:6px; height:6px; border-radius:50%; background:#4ade80; }
@@ -1861,13 +1899,13 @@
 .ai-msg.user-msg { flex-direction:row-reverse; }
 .ai-bubble {
   max-width:80%; padding:.75rem 1rem;
-  border-radius:14px; font-size:.84rem; line-height:1.55; font-family:'Inter',sans-serif;
+  border-radius:14px; font-size:.84rem; line-height:1.55; font-family:'General Sans','Inter',sans-serif;
 }
 .ai-msg .ai-bubble { background:rgba(74,158,149,.1); border:1px solid rgba(74,158,149,.2); border-bottom-left-radius:3px; color:rgba(255,255,255,.88); }
 .user-msg .ai-bubble { background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.1); border-bottom-right-radius:3px; color:rgba(255,255,255,.7); }
 .ai-msg-av { width:26px; height:26px; border-radius:50%; overflow:hidden; flex-shrink:0; background:rgba(74,158,149,.2); }
 .ai-msg-av img { width:100%; height:100%; object-fit:cover; }
-.ai-msg-av.user-av { display:flex; align-items:center; justify-content:center; font-size:.58rem; color:rgba(255,255,255,.4); font-family:'Inter',sans-serif; }
+.ai-msg-av.user-av { display:flex; align-items:center; justify-content:center; font-size:.58rem; color:rgba(255,255,255,.4); font-family:'General Sans','Inter',sans-serif; }
 .ai-typing { display:flex; gap:4px; padding:.75rem 1rem; background:rgba(74,158,149,.08); border:1px solid rgba(74,158,149,.15); border-radius:14px; border-bottom-left-radius:3px; width:fit-content; }
 .ai-typing span { width:6px; height:6px; border-radius:50%; background:#4a9e95; animation:aiTyping 1.2s ease infinite; }
 .ai-typing span:nth-child(2){animation-delay:.2s} .ai-typing span:nth-child(3){animation-delay:.4s}
@@ -1882,7 +1920,7 @@
 .ai-input-row:focus-within { border-color:rgba(74,158,149,.4); }
 #ai-chat-input {
   flex:1; background:none; border:none; outline:none;
-  color:#fff; font-family:'Inter',sans-serif; font-size:.84rem; resize:none; height:20px; max-height:72px;
+  color:#fff; font-family:'General Sans','Inter',sans-serif; font-size:.84rem; resize:none; height:20px; max-height:72px;
 }
 #ai-chat-input::placeholder { color:rgba(255,255,255,.2); }
 .ai-send { width:34px; height:34px; border-radius:8px; background:#4a9e95; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:background .2s,transform .15s; }
@@ -1899,7 +1937,7 @@
 .ai-right::-webkit-scrollbar-thumb { background:rgba(0,0,0,.12); border-radius:2px; }
 .ai-form-header { padding:1.5rem 1.5rem 1.2rem; background:#fff; border-bottom:1px solid rgba(0,0,0,.07); }
 .ai-form-eyebrow { font-size:.65rem; letter-spacing:.15em; text-transform:uppercase; color:#4a9e95; margin-bottom:.3rem; }
-.ai-form-title { font-family:'Cormorant Garamond',serif; font-size:1.4rem; font-weight:400; color:#1a1a1a; }
+.ai-form-title { font-family:'Butler','Cormorant Garamond',serif; font-size:1.4rem; font-weight:400; color:#1a1a1a; }
 .ai-form-sub { font-size:.74rem; color:rgba(0,0,0,.35); margin-top:.25rem; }
 .ai-progress { height:3px; background:rgba(0,0,0,.06); margin-top:.9rem; border-radius:2px; overflow:hidden; }
 .ai-progress-fill { height:100%; background:#4a9e95; border-radius:2px; transition:width .6s ease; width:0; }
@@ -1910,17 +1948,17 @@
 .ai-field.filled .ai-field-check { background:#4a9e95; border-color:#4a9e95; }
 .ai-field-check svg { display:none; }
 .ai-field.filled .ai-field-check svg { display:block; }
-.ai-field-lbl { font-size:.67rem; letter-spacing:.1em; text-transform:uppercase; color:rgba(0,0,0,.35); margin-bottom:.2rem; font-family:'Inter',sans-serif; }
-.ai-field-val { font-size:.88rem; color:rgba(0,0,0,.2); font-style:italic; transition:all .4s; min-height:20px; font-family:'Inter',sans-serif; }
+.ai-field-lbl { font-size:.67rem; letter-spacing:.1em; text-transform:uppercase; color:rgba(0,0,0,.35); margin-bottom:.2rem; font-family:'General Sans','Inter',sans-serif; }
+.ai-field-val { font-size:.88rem; color:rgba(0,0,0,.2); font-style:italic; transition:all .4s; min-height:20px; font-family:'General Sans','Inter',sans-serif; }
 .ai-field.filled .ai-field-val { color:#1a1a1a; font-style:normal; font-weight:400; }
 @keyframes aiFill { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
 .ai-field-val.anim { animation:aiFill .45s ease forwards; }
 .ai-submit-area { padding:1.2rem 1.5rem 1.5rem; background:#fff; border-top:1px solid rgba(0,0,0,.08); display:none; }
 .ai-submit-area.show { display:block; }
-.ai-submit-msg { font-size:.78rem; color:rgba(0,0,0,.4); margin-bottom:.9rem; line-height:1.5; font-family:'Inter',sans-serif; }
+.ai-submit-msg { font-size:.78rem; color:rgba(0,0,0,.4); margin-bottom:.9rem; line-height:1.5; font-family:'General Sans','Inter',sans-serif; }
 .ai-submit-btn {
   width:100%; padding:.9rem 1.2rem; background:#1a1a1a; border:none; border-radius:8px;
-  color:#fff; font-family:'Inter',sans-serif; font-size:.78rem; font-weight:500;
+  color:#fff; font-family:'General Sans','Inter',sans-serif; font-size:.78rem; font-weight:500;
   letter-spacing:.12em; text-transform:uppercase; cursor:pointer; transition:background .2s,transform .15s;
   display:flex; align-items:center; justify-content:center; gap:.65rem;
 }
@@ -1939,34 +1977,34 @@
   border-radius:14px; padding:1.4rem 1.6rem; backdrop-filter:blur(20px);
   flex-shrink:0;
 }
-.ai-setup-card h3 { font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:300; margin-bottom:.25rem; }
-.ai-setup-card p { color:rgba(255,255,255,.4); font-size:.78rem; line-height:1.5; margin-bottom:1rem; font-family:'Inter',sans-serif; }
+.ai-setup-card h3 { font-family:'Butler','Cormorant Garamond',serif; font-size:1.5rem; font-weight:300; margin-bottom:.25rem; }
+.ai-setup-card p { color:rgba(255,255,255,.4); font-size:.78rem; line-height:1.5; margin-bottom:1rem; font-family:'General Sans','Inter',sans-serif; }
 .ai-setup-field { margin-bottom:.7rem; }
-.ai-setup-field label { display:block; font-size:.63rem; letter-spacing:.12em; text-transform:uppercase; color:rgba(255,255,255,.4); margin-bottom:.3rem; font-family:'Inter',sans-serif; }
+.ai-setup-field label { display:block; font-size:.63rem; letter-spacing:.12em; text-transform:uppercase; color:rgba(255,255,255,.4); margin-bottom:.3rem; font-family:'General Sans','Inter',sans-serif; }
 .ai-setup-field input {
   width:100%; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12);
-  color:#fff; padding:.5rem .8rem; border-radius:8px; font-family:'Inter',sans-serif;
+  color:#fff; padding:.5rem .8rem; border-radius:8px; font-family:'General Sans','Inter',sans-serif;
   font-size:.8rem; outline:none; transition:border-color .2s;
 }
 .ai-setup-field input:focus { border-color:#4a9e95; }
-.ai-setup-field .ai-setup-note { font-size:.7rem; color:rgba(255,255,255,.25); margin-top:.3rem; font-family:'Inter',sans-serif; }
+.ai-setup-field .ai-setup-note { font-size:.7rem; color:rgba(255,255,255,.25); margin-top:.3rem; font-family:'General Sans','Inter',sans-serif; }
 .ai-setup-field .ai-setup-note a { color:#4a9e95; text-decoration:none; }
 .ai-launch-btn {
   width:100%; padding:.7rem; background:#4a9e95; border:none; border-radius:8px;
-  color:#fff; font-family:'Inter',sans-serif; font-size:.78rem; font-weight:500;
+  color:#fff; font-family:'General Sans','Inter',sans-serif; font-size:.78rem; font-weight:500;
   letter-spacing:.1em; text-transform:uppercase; cursor:pointer; transition:background .2s; margin-bottom:.45rem;
 }
 .ai-launch-btn:hover { background:#3d8a82; }
 .ai-launch-btn.ghost { background:rgba(255,255,255,.08); }
 .ai-launch-btn.ghost:hover { background:rgba(255,255,255,.14); }
-.ai-demo-note { background:rgba(74,158,149,.12); border:1px solid rgba(74,158,149,.25); border-radius:8px; padding:.65rem .9rem; font-size:.74rem; color:rgba(255,255,255,.55); margin-bottom:1.2rem; line-height:1.5; font-family:'Inter',sans-serif; }
+.ai-demo-note { background:rgba(74,158,149,.12); border:1px solid rgba(74,158,149,.25); border-radius:8px; padding:.65rem .9rem; font-size:.74rem; color:rgba(255,255,255,.55); margin-bottom:1.2rem; line-height:1.5; font-family:'General Sans','Inter',sans-serif; }
 .ai-demo-note strong { color:#4a9e95; }
 
 /* Floating AI button */
 .ai-float-btn {
   position: fixed; bottom: 2rem; right: 2rem; z-index: 10002;
   background: #4a9e95; border: none; border-radius: 50px;
-  color: #fff; font-family:'Inter',sans-serif; font-size:.78rem;
+  color: #fff; font-family:'General Sans','Inter',sans-serif; font-size:.78rem;
   font-weight:500; letter-spacing:.08em; text-transform:uppercase;
   padding:.85rem 1.4rem; cursor:pointer;
   display:flex; align-items:center; gap:.6rem;
@@ -1994,9 +2032,9 @@
   animation:aiModalIn .4s ease;
 }
 .ai-success-icon { width:56px; height:56px; border-radius:50%; background:rgba(74,158,149,.1); display:flex; align-items:center; justify-content:center; margin:0 auto 1.2rem; }
-.ai-success-card h3 { font-family:'Cormorant Garamond',serif; font-size:1.7rem; color:#1a1a1a; margin-bottom:.4rem; }
-.ai-success-card p { font-size:.82rem; color:rgba(0,0,0,.5); line-height:1.6; font-family:'Inter',sans-serif; }
-.ai-success-close { margin-top:1.2rem; padding:.65rem 1.8rem; background:#4a9e95; border:none; border-radius:8px; color:#fff; font-family:'Inter',sans-serif; font-size:.76rem; letter-spacing:.1em; text-transform:uppercase; cursor:pointer; transition:background .2s; }
+.ai-success-card h3 { font-family:'Butler','Cormorant Garamond',serif; font-size:1.7rem; color:#1a1a1a; margin-bottom:.4rem; }
+.ai-success-card p { font-size:.82rem; color:rgba(0,0,0,.5); line-height:1.6; font-family:'General Sans','Inter',sans-serif; }
+.ai-success-close { margin-top:1.2rem; padding:.65rem 1.8rem; background:#4a9e95; border:none; border-radius:8px; color:#fff; font-family:'General Sans','Inter',sans-serif; font-size:.76rem; letter-spacing:.1em; text-transform:uppercase; cursor:pointer; transition:background .2s; }
 .ai-success-close:hover { background:#3d8a82; }
 
 @media (max-width:768px) {
@@ -2042,7 +2080,7 @@
 .ai-voice-close-btn:hover { background:rgba(224,82,82,.2); color:#e05252; }
 
 .ai-voice-title {
-  font-family:'Inter',sans-serif; font-size:.66rem; letter-spacing:.18em;
+  font-family:'General Sans','Inter',sans-serif; font-size:.66rem; letter-spacing:.18em;
   text-transform:uppercase; color:rgba(255,255,255,.28);
   display:flex; align-items:center; gap:.45rem;
 }
@@ -2109,7 +2147,7 @@
 /* AI response text — no box, just text */
 .ai-voice-response {
   width:100%;
-  font-family:'Inter',sans-serif; font-size:.88rem; line-height:1.62;
+  font-family:'General Sans','Inter',sans-serif; font-size:.88rem; line-height:1.62;
   color:rgba(255,255,255,.88); text-align:center;
   transition:color .25s;
 }
@@ -2117,7 +2155,7 @@
 
 /* User transcript */
 .ai-voice-transcript {
-  width:100%; font-family:'Inter',sans-serif; font-size:.8rem;
+  width:100%; font-family:'General Sans','Inter',sans-serif; font-size:.8rem;
   color:rgba(255,255,255,.28); font-style:italic; text-align:center;
   transition:color .2s; line-height:1.5;
   padding-top:.6rem;
@@ -2134,7 +2172,7 @@
 }
 /* Status */
 .ai-voice-status {
-  font-family:'Inter',sans-serif; font-size:.68rem; letter-spacing:.1em;
+  font-family:'General Sans','Inter',sans-serif; font-size:.68rem; letter-spacing:.1em;
   text-transform:uppercase; color:rgba(255,255,255,.22);
 }
 .ai-voice-status.v-listening { color:rgba(74,158,149,.85); }
@@ -2146,7 +2184,7 @@
   width:100%; padding:.7rem;
   background:rgba(224,82,82,.08); border:1px solid rgba(224,82,82,.18);
   border-radius:11px; color:rgba(224,82,82,.65);
-  font-family:'Inter',sans-serif; font-size:.8rem; letter-spacing:.04em;
+  font-family:'General Sans','Inter',sans-serif; font-size:.8rem; letter-spacing:.04em;
   cursor:pointer; transition:background .2s,border-color .2s,color .2s;
 }
 .ai-voice-end-btn:hover { background:rgba(224,82,82,.18); border-color:rgba(224,82,82,.38); color:#e05252; }
@@ -2158,7 +2196,7 @@
 }
 .ai-voice-btn {
   background:transparent; border:1.5px solid rgba(255,255,255,.15);
-  color:rgba(255,255,255,.45); font-family:'Inter',sans-serif;
+  color:rgba(255,255,255,.45); font-family:'General Sans','Inter',sans-serif;
   font-size:.72rem; font-weight:400; letter-spacing:.04em;
   padding:.28rem .75rem; border-radius:20px;
   cursor:pointer; transition:all .15s; white-space:nowrap;
@@ -2171,7 +2209,7 @@
 .ai-voice-btn:hover:not(.active) { background:rgba(255,255,255,.06); color:rgba(255,255,255,.7); }
 /* Voice description line */
 .ai-voice-desc {
-  text-align:center; font-family:'Inter',sans-serif;
+  text-align:center; font-family:'General Sans','Inter',sans-serif;
   font-size:.68rem; color:rgba(255,255,255,.32);
   letter-spacing:.03em;
 }
@@ -2180,7 +2218,7 @@
 .ai-voice-lang-row { display:flex; gap:.4rem; justify-content:center; margin-bottom:.7rem; }
 .ai-voice-lang-btn {
   background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1);
-  color:rgba(255,255,255,.4); font-family:'Inter',sans-serif;
+  color:rgba(255,255,255,.4); font-family:'General Sans','Inter',sans-serif;
   font-size:.68rem; letter-spacing:.07em; padding:.3rem .8rem;
   border-radius:20px; cursor:pointer; transition:background .2s,color .2s,border-color .2s;
 }
@@ -2194,7 +2232,7 @@
 .ai-voice-text-inp {
   flex:1; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.14);
   border-radius:10px; padding:.45rem .75rem;
-  color:#fff; font-family:'Inter',sans-serif; font-size:.78rem;
+  color:#fff; font-family:'General Sans','Inter',sans-serif; font-size:.78rem;
   outline:none; transition:border-color .2s;
 }
 .ai-voice-text-inp::placeholder { color:rgba(255,255,255,.28); }
@@ -2207,7 +2245,7 @@
 }
 .ai-voice-send-btn:hover { background:rgba(74,158,149,.4); }
 .ai-voice-input-label {
-  text-align:center; font-family:'Inter',sans-serif;
+  text-align:center; font-family:'General Sans','Inter',sans-serif;
   font-size:.6rem; letter-spacing:.07em; color:rgba(255,255,255,.2);
   margin-bottom:.1rem; text-transform:uppercase;
 }
@@ -6071,15 +6109,15 @@ function aiRealtimeDisconnect() {
         <p>Олександра — ваш особистий консультант Bellshire Homes. Вона допоможе знайти ідеальну резиденцію через природну розмову — текстом або голосом.</p>
 
         <div style="display:flex;flex-direction:column;gap:.5rem;margin-top:1rem;">
-          <div style="display:flex;align-items:center;gap:.6rem;padding:.55rem .8rem;background:rgba(74,158,149,.08);border:1px solid rgba(74,158,149,.18);border-radius:10px;font-size:.75rem;color:rgba(255,255,255,.6);font-family:'Inter',sans-serif;">
+          <div style="display:flex;align-items:center;gap:.6rem;padding:.55rem .8rem;background:rgba(74,158,149,.08);border:1px solid rgba(74,158,149,.18);border-radius:10px;font-size:.75rem;color:rgba(255,255,255,.6);font-family:'General Sans','Inter',sans-serif;">
             <span style="font-size:1rem;">💬</span>
             <span>Чат з анкетою та записом на зустріч</span>
           </div>
-          <div style="display:flex;align-items:center;gap:.6rem;padding:.55rem .8rem;background:rgba(74,158,149,.08);border:1px solid rgba(74,158,149,.18);border-radius:10px;font-size:.75rem;color:rgba(255,255,255,.6);font-family:'Inter',sans-serif;">
+          <div style="display:flex;align-items:center;gap:.6rem;padding:.55rem .8rem;background:rgba(74,158,149,.08);border:1px solid rgba(74,158,149,.18);border-radius:10px;font-size:.75rem;color:rgba(255,255,255,.6);font-family:'General Sans','Inter',sans-serif;">
             <span style="font-size:1rem;">🎙</span>
             <span>Голосовий асистент на базі GPT Realtime</span>
           </div>
-          <div style="display:flex;align-items:center;gap:.6rem;padding:.55rem .8rem;background:rgba(74,158,149,.08);border:1px solid rgba(74,158,149,.18);border-radius:10px;font-size:.75rem;color:rgba(255,255,255,.6);font-family:'Inter',sans-serif;">
+          <div style="display:flex;align-items:center;gap:.6rem;padding:.55rem .8rem;background:rgba(74,158,149,.08);border:1px solid rgba(74,158,149,.18);border-radius:10px;font-size:.75rem;color:rgba(255,255,255,.6);font-family:'General Sans','Inter',sans-serif;">
             <span style="font-size:1rem;">🇺🇦</span>
             <span>Підтримка української та англійської мов</span>
           </div>
@@ -6096,7 +6134,7 @@ function aiRealtimeDisconnect() {
         <label id="ai-consent-label" style="display:flex;align-items:flex-start;gap:.6rem;margin-top:1.1rem;cursor:pointer;">
           <input type="checkbox" id="ai-consent-cb" onchange="aiConsentChange()"
                  style="margin-top:2px;accent-color:#4a9e95;width:14px;height:14px;flex-shrink:0;">
-          <span style="font-size:.7rem;color:rgba(255,255,255,.45);line-height:1.5;font-family:'Inter',sans-serif;">
+          <span style="font-size:.7rem;color:rgba(255,255,255,.45);line-height:1.5;font-family:'General Sans','Inter',sans-serif;">
             Я погоджуюсь, що ця розмова буде записана Bellshire Homes з метою покращення сервісу та відповідно до чинного законодавства про захист персональних даних. Дані зберігаються у захищеному середовищі та не передаються третім особам.
           </span>
         </label>
@@ -6118,7 +6156,7 @@ function aiRealtimeDisconnect() {
       </div>
       <div class="ai-chat" id="ai-chat"></div>
       <div class="ai-input-bar">
-        <div id="ai-did-status" style="display:none;font-size:.68rem;color:rgba(255,255,255,.35);font-family:'Inter',sans-serif;margin-bottom:.5rem;padding:0 .2rem;"></div>
+        <div id="ai-did-status" style="display:none;font-size:.68rem;color:rgba(255,255,255,.35);font-family:'General Sans','Inter',sans-serif;margin-bottom:.5rem;padding:0 .2rem;"></div>
         <div class="ai-input-row">
           <button class="ai-mic-btn" id="ai-mic-btn" onclick="aiOpenVoiceMode()" title="Voice mode">
             <svg id="ai-mic-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/></svg>
