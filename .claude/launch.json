@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Bellshire Homes (Static Server)",
+      "runtimeExecutable": "/opt/homebrew/bin/python3",
+      "runtimeArgs": ["-m", "http.server", "3000", "--directory", "/Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/Сайт Bellshire Homes/bellshirehomes"],
+      "port": 3000,
+      "autoPort": false
+    }
+    ,{
+      "name": "voice-assistant",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "/Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/voice-assistant/frontend"],
+      "port": 5173
+    }
+  ]
+}

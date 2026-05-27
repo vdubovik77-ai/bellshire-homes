@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bellshire Homes — AI Consultation</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Outfit:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal: #4a9e95;
+    --charcoal: #1a1a1a;
+    --gold: #b8965a;
+    --cream: #f5f2ee;
+    --dark: #111111;
+    --glass: rgba(255,255,255,0.06);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--dark);
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ── */
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.2rem 2.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(12px);
+  }
+  .header-logo {
+    font-family: 'Outfit', sans-serif; font-weight: 300;
+    font-size: 0.8rem; letter-spacing: 0.3em; text-transform: uppercase;
+    color: rgba(255,255,255,0.7);
+  }
+  .header-logo span { color: var(--teal); }
+  .header-badge {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+  }
+  .badge-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--teal); animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* ── Setup Screen ── */
+  #setup-screen {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    padding: 2rem;
+  }
+  .setup-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 2.5rem;
+    width: 100%; max-width: 520px;
+    backdrop-filter: blur(20px);
+  }
+  .setup-card h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem; font-weight: 300;
+    margin-bottom: 0.5rem;
+  }
+  .setup-card p {
+    color: rgba(255,255,255,0.45); font-size: 0.85rem;
+    margin-bottom: 2rem; line-height: 1.6;
+  }
+  .setup-field { margin-bottom: 1.2rem; }
+  .setup-field label {
+    display: block; font-size: 0.72rem; letter-spacing: 0.12em;
+    text-transform: uppercase; color: rgba(255,255,255,0.45);
+    margin-bottom: 0.5rem;
+  }
+  .setup-field input, .setup-field select {
+    width: 100%; background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #fff; padding: 0.75rem 1rem;
+    border-radius: 8px; font-family: 'Outfit', sans-serif;
+    font-size: 0.85rem; outline: none;
+    transition: border-color 0.2s;
+  }
+  .setup-field input:focus { border-color: var(--teal); }
+  .setup-note {
+    font-size: 0.75rem; color: rgba(255,255,255,0.3);
+    margin-top: 0.4rem; line-height: 1.5;
+  }
+  .setup-note a { color: var(--teal); text-decoration: none; }
+  .btn-start {
+    width: 100%; padding: 1rem; margin-top: 1.5rem;
+    background: var(--teal); border: none; border-radius: 8px;
+    color: #fff; font-family: 'Outfit', sans-serif;
+    font-size: 0.85rem; font-weight: 500; letter-spacing: 0.1em;
+    text-transform: uppercase; cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .btn-start:hover { background: #3d8a82; transform: translateY(-1px); }
+  .btn-start:disabled { background: rgba(255,255,255,0.1); cursor: not-allowed; transform: none; }
+
+  /* ── Demo mode ── */
+  .demo-banner {
+    background: rgba(74,158,149,0.15);
+    border: 1px solid rgba(74,158,149,0.3);
+    border-radius: 8px; padding: 0.75rem 1rem;
+    font-size: 0.78rem; color: rgba(255,255,255,0.6);
+    margin-bottom: 1.5rem; line-height: 1.5;
+  }
+  .demo-banner strong { color: var(--teal); }
+
+  /* ── Main Console ── */
+  #main-console {
+    flex: 1; display: none; grid-template-columns: 1fr 420px;
+    gap: 0; overflow: hidden;
+  }
+
+  /* ── Left: Avatar + Chat ── */
+  .left-panel {
+    display: flex; flex-direction: column;
+    background: #0d0d0d;
+    border-right: 1px solid rgba(255,255,255,0.07);
+  }
+
+  .avatar-area {
+    position: relative; flex-shrink: 0;
+    background: linear-gradient(160deg, #141414 0%, #0a1a18 100%);
+    padding: 2rem;
+    display: flex; align-items: center; gap: 1.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .avatar-wrap {
+    position: relative; flex-shrink: 0;
+  }
+  .avatar-ring {
+    width: 160px; height: 160px; border-radius: 50%;
+    border: none;
+    padding: 0; background: transparent;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 0 0 rgba(74,158,149,0);
+    transition: box-shadow 0.4s ease;
+  }
+  .avatar-ring video, .avatar-ring img {
+    width: 100%; height: 100%; object-fit: cover;
+    border-radius: 50%;
+    display: block;
+  }
+  /* Glow behind avatar instead of a ring */
+  .avatar-speaking-ring {
+    position: absolute; inset: -2px; border-radius: 50%;
+    background: transparent;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .speaking .avatar-ring {
+    box-shadow:
+      0 0 18px 6px rgba(74,158,149,0.55),
+      0 0 40px 14px rgba(74,158,149,0.28),
+      0 0 70px 28px rgba(74,158,149,0.12);
+    animation: avatarGlow 1.6s ease-in-out infinite;
+  }
+  @keyframes avatarGlow {
+    0%,100% {
+      box-shadow:
+        0 0 18px 6px rgba(74,158,149,0.55),
+        0 0 40px 14px rgba(74,158,149,0.28),
+        0 0 70px 28px rgba(74,158,149,0.12);
+    }
+    50% {
+      box-shadow:
+        0 0 28px 10px rgba(74,158,149,0.75),
+        0 0 60px 22px rgba(74,158,149,0.40),
+        0 0 100px 40px rgba(74,158,149,0.18);
+    }
+  }
+  .avatar-info { flex: 1; }
+  .avatar-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem; font-weight: 300; margin-bottom: 0.2rem;
+  }
+  .avatar-title {
+    font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--teal); margin-bottom: 0.5rem;
+  }
+  .avatar-status {
+    font-size: 0.75rem; color: rgba(255,255,255,0.35);
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #4ade80;
+  }
+
+  .chat-area {
+    flex: 1; overflow-y: auto;
+    padding: 1.5rem; display: flex; flex-direction: column;
+    gap: 1rem; scroll-behavior: smooth;
+  }
+  .chat-area::-webkit-scrollbar { width: 4px; }
+  .chat-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+  .msg { display: flex; gap: 0.75rem; align-items: flex-end; }
+  .msg.user { flex-direction: row-reverse; }
+
+  .msg-bubble {
+    max-width: 78%; padding: 0.85rem 1.1rem;
+    border-radius: 16px; font-size: 0.88rem; line-height: 1.55;
+  }
+  .msg.ai .msg-bubble {
+    background: rgba(74,158,149,0.12);
+    border: 1px solid rgba(74,158,149,0.2);
+    border-bottom-left-radius: 4px;
+    color: rgba(255,255,255,0.88);
+  }
+  .msg.user .msg-bubble {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-bottom-right-radius: 4px;
+    color: rgba(255,255,255,0.75);
+  }
+  .msg-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(74,158,149,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; flex-shrink: 0;
+    overflow: hidden;
+  }
+  .msg-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+  .typing-indicator {
+    display: flex; gap: 4px; padding: 0.85rem 1.1rem;
+    background: rgba(74,158,149,0.08);
+    border: 1px solid rgba(74,158,149,0.15);
+    border-radius: 16px; border-bottom-left-radius: 4px;
+    width: fit-content;
+  }
+  .typing-indicator span {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--teal); animation: typing 1.2s ease infinite;
+  }
+  .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typing { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+
+  .chat-input-area {
+    padding: 1rem 1.5rem 1.5rem;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .input-row {
+    display: flex; gap: 0.75rem; align-items: center;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px; padding: 0.5rem 0.5rem 0.5rem 1rem;
+    transition: border-color 0.2s;
+  }
+  .input-row:focus-within { border-color: rgba(74,158,149,0.4); }
+  #chat-input {
+    flex: 1; background: none; border: none; outline: none;
+    color: #fff; font-family: 'Outfit', sans-serif; font-size: 0.88rem;
+    resize: none; height: 22px; max-height: 80px;
+  }
+  #chat-input::placeholder { color: rgba(255,255,255,0.2); }
+  .send-btn {
+    width: 38px; height: 38px; border-radius: 9px;
+    background: var(--teal); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s, transform 0.15s; flex-shrink: 0;
+  }
+  .send-btn:hover { background: #3d8a82; transform: scale(1.05); }
+  .send-btn:disabled { background: rgba(255,255,255,0.1); cursor: not-allowed; transform: none; }
+  .send-btn svg { color: #fff; }
+
+  /* ── Right: Form Panel ── */
+  .right-panel {
+    background: var(--cream);
+    display: flex; flex-direction: column;
+    overflow-y: auto;
+  }
+  .right-panel::-webkit-scrollbar { width: 4px; }
+  .right-panel::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 2px; }
+
+  .form-header {
+    padding: 2rem 2rem 1.5rem;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    background: #fff;
+  }
+  .form-eyebrow {
+    font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--teal); margin-bottom: 0.4rem;
+  }
+  .form-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem; font-weight: 400; color: var(--charcoal);
+  }
+  .form-subtitle {
+    font-size: 0.78rem; color: rgba(0,0,0,0.35); margin-top: 0.3rem;
+  }
+
+  .progress-bar {
+    height: 3px; background: rgba(0,0,0,0.06); margin-top: 1rem;
+    border-radius: 2px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: var(--teal); border-radius: 2px;
+    transition: width 0.6s ease; width: 0%;
+  }
+
+  .form-fields { padding: 1.5rem 2rem; flex: 1; }
+
+  .field-item {
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    display: flex; align-items: flex-start; gap: 1rem;
+    transition: all 0.3s ease;
+  }
+  .field-item:last-child { border-bottom: none; }
+
+  .field-check {
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 2px solid rgba(0,0,0,0.15);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 2px;
+    transition: all 0.3s ease;
+  }
+  .field-item.filled .field-check {
+    background: var(--teal); border-color: var(--teal);
+  }
+  .field-check svg { display: none; }
+  .field-item.filled .field-check svg { display: block; }
+
+  .field-content { flex: 1; }
+  .field-label {
+    font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: rgba(0,0,0,0.35); margin-bottom: 0.25rem;
+  }
+  .field-value {
+    font-size: 0.92rem; color: rgba(0,0,0,0.2);
+    font-style: italic; transition: all 0.4s ease;
+    min-height: 22px;
+  }
+  .field-item.filled .field-value {
+    color: var(--charcoal); font-style: normal; font-weight: 400;
+  }
+  .field-value.animating {
+    animation: fillAnim 0.5s ease forwards;
+  }
+  @keyframes fillAnim {
+    0% { opacity: 0; transform: translateY(4px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  .submit-area {
+    padding: 1.5rem 2rem 2rem;
+    background: #fff;
+    border-top: 1px solid rgba(0,0,0,0.08);
+    display: none;
+  }
+  .submit-area.visible { display: block; }
+  .submit-msg {
+    font-size: 0.82rem; color: rgba(0,0,0,0.45);
+    margin-bottom: 1rem; line-height: 1.5;
+  }
+  .btn-submit {
+    width: 100%; padding: 1rem 1.5rem;
+    background: var(--charcoal); border: none; border-radius: 8px;
+    color: #fff; font-family: 'Outfit', sans-serif;
+    font-size: 0.82rem; font-weight: 500; letter-spacing: 0.12em;
+    text-transform: uppercase; cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+  }
+  .btn-submit:hover { background: var(--teal); transform: translateY(-1px); }
+
+  /* Success */
+  .success-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+    align-items: center; justify-content: center; z-index: 100;
+  }
+  .success-overlay.show { display: flex; }
+  .success-card {
+    background: #fff; border-radius: 16px; padding: 3rem;
+    text-align: center; max-width: 420px; width: 90%;
+    animation: successIn 0.4s ease;
+  }
+  @keyframes successIn { from{transform:scale(0.9);opacity:0} to{transform:scale(1);opacity:1} }
+  .success-icon {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: rgba(74,158,149,0.1); display: flex;
+    align-items: center; justify-content: center;
+    margin: 0 auto 1.5rem;
+  }
+  .success-card h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem; color: var(--charcoal); margin-bottom: 0.5rem;
+  }
+  .success-card p { font-size: 0.85rem; color: rgba(0,0,0,0.5); line-height: 1.6; }
+  .btn-close-success {
+    margin-top: 1.5rem; padding: 0.75rem 2rem;
+    background: var(--teal); border: none; border-radius: 8px;
+    color: #fff; font-family: 'Outfit', sans-serif;
+    font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase;
+    cursor: pointer; transition: background 0.2s;
+  }
+  .btn-close-success:hover { background: #3d8a82; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    #main-console { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+    .right-panel { max-height: 45vh; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-logo">Bellshire <span>Homes</span></div>
+  <div class="header-badge">
+    <div class="badge-dot"></div>
+    AI Consultation Live
+  </div>
+</header>
+
+<!-- Setup Screen -->
+<div id="setup-screen">
+  <div class="setup-card">
+    <h2>AI Avatar Consultation</h2>
+    <p>Інтерактивний аватар допоможе підібрати ідеальний будинок і заповнить анкету за вас. Для роботи потрібні API ключі.</p>
+
+    <div class="demo-banner">
+      <strong>Тест без ключів:</strong> Натисніть "Demo Mode" — аватар буде симульований, Claude буде реальним (потрібен тільки Anthropic ключ), або повний Demo без будь-яких ключів.
+    </div>
+
+    <div class="setup-field">
+      <label>Anthropic API Key</label>
+      <input type="password" id="anthropic-key" placeholder="sk-ant-..." autocomplete="off">
+      <div class="setup-note">Отримати безкоштовно: <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></div>
+    </div>
+
+    <div class="setup-field">
+      <label>HeyGen API Key (опційно — для живого аватара)</label>
+      <input type="password" id="heygen-key" placeholder="Залиште порожнім для демо-аватара" autocomplete="off">
+      <div class="setup-note">Отримати: <a href="https://app.heygen.com/settings?nav=API" target="_blank">app.heygen.com → Settings → API</a></div>
+    </div>
+
+    <div class="setup-field">
+      <label>HeyGen Avatar ID (якщо вказали HeyGen Key)</label>
+      <input type="text" id="heygen-avatar-id" placeholder="Наприклад: Wayne_20240711 або ваш custom avatar ID" autocomplete="off">
+      <div class="setup-note">Список аватарів: <a href="https://app.heygen.com/avatars" target="_blank">app.heygen.com/avatars</a> → скопіюйте Avatar ID</div>
+    </div>
+
+    <button class="btn-start" id="btn-launch" onclick="launchConsole()">
+      Запустити AI Консультацію
+    </button>
+    <button class="btn-start" style="background:rgba(255,255,255,0.1); margin-top:0.75rem;" onclick="launchDemo()">
+      Demo Mode (без ключів)
+    </button>
+  </div>
+</div>
+
+<!-- Main Console -->
+<div id="main-console">
+
+  <!-- Left: Avatar + Chat -->
+  <div class="left-panel">
+
+    <div class="avatar-area" id="avatar-area">
+      <div class="avatar-wrap">
+        <div class="avatar-ring">
+          <video id="avatar-video" autoplay playsinline style="display:none;"></video>
+          <img id="avatar-img" src="../images/alexandra.png" alt="Alexandra">
+        </div>
+        <div class="avatar-speaking-ring" id="speaking-ring"></div>
+      </div>
+      <div class="avatar-info">
+        <div class="avatar-name">Alexandra</div>
+        <div class="avatar-title">Senior Consultant · Bellshire Homes</div>
+        <div class="avatar-status">
+          <div class="status-dot"></div>
+          <span id="status-text">Online · Ready to help</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-area" id="chat-area"></div>
+
+    <div class="chat-input-area">
+      <div class="input-row">
+        <textarea id="chat-input" placeholder="Напишіть відповідь..." rows="1" onkeydown="handleKey(event)"></textarea>
+        <button class="send-btn" id="send-btn" onclick="sendMessage()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right: Form -->
+  <div class="right-panel">
+    <div class="form-header">
+      <div class="form-eyebrow">Consultation Profile</div>
+      <div class="form-title">Your Ideal Home</div>
+      <div class="form-subtitle">Заповнюється автоматично в процесі розмови</div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+    </div>
+
+    <div class="form-fields">
+      <div class="field-item" id="f-name">
+        <div class="field-check">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="field-content">
+          <div class="field-label">Full Name</div>
+          <div class="field-value" id="v-name">Не вказано</div>
+        </div>
+      </div>
+
+      <div class="field-item" id="f-email">
+        <div class="field-check">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="field-content">
+          <div class="field-label">Email</div>
+          <div class="field-value" id="v-email">Не вказано</div>
+        </div>
+      </div>
+
+      <div class="field-item" id="f-phone">
+        <div class="field-check">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="field-content">
+          <div class="field-label">Phone</div>
+          <div class="field-value" id="v-phone">Не вказано</div>
+        </div>
+      </div>
+
+      <div class="field-item" id="f-budget">
+        <div class="field-check">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="field-content">
+          <div class="field-label">Budget Range</div>
+          <div class="field-value" id="v-budget">Не вказано</div>
+        </div>
+      </div>
+
+      <div class="field-item" id="f-neighborhood">
+        <div class="field-check">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="field-content">
+          <div class="field-label">Preferred Area</div>
+          <div class="field-value" id="v-neighborhood">Не вказано</div>
+        </div>
+      </div>
+
+      <div class="field-item" id="f-style">
+        <div class="field-check">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="field-content">
+          <div class="field-label">Home Style</div>
+          <div class="field-value" id="v-style">Не вказано</div>
+        </div>
+      </div>
+
+      <div class="field-item" id="f-timeline">
+        <div class="field-check">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="field-content">
+          <div class="field-label">Timeline</div>
+          <div class="field-value" id="v-timeline">Не вказано</div>
+        </div>
+      </div>
+
+      <div class="field-item" id="f-broker">
+        <div class="field-check">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="field-content">
+          <div class="field-label">Working with Broker</div>
+          <div class="field-value" id="v-broker">Не вказано</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="submit-area" id="submit-area">
+      <div class="submit-msg">Всі дані зібрано. Натисніть, щоб надіслати заявку команді Bellshire Homes.</div>
+      <button class="btn-submit" onclick="submitForm()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>
+        Send to Bellshire Homes
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Success -->
+<div class="success-overlay" id="success-overlay">
+  <div class="success-card">
+    <div class="success-icon">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4a9e95" stroke-width="2.5">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+    <h3>Thank You!</h3>
+    <p>Ваша заявка надіслана команді Bellshire Homes. Alexandra зв'яжеться з вами протягом 24 годин.</p>
+    <button class="btn-close-success" onclick="document.getElementById('success-overlay').classList.remove('show')">Close</button>
+  </div>
+</div>
+
+<script>
+// ─── Config ───────────────────────────────────────────
+let ANTHROPIC_KEY = '';
+let HEYGEN_KEY = '';
+let HEYGEN_AVATAR_ID = '';
+let IS_DEMO = false;
+
+// ─── State ────────────────────────────────────────────
+let conversationHistory = [];
+let formData = {
+  name: null, email: null, phone: null, budget: null,
+  neighborhood: null, style: null, timeline: null, broker: null
+};
+let filledCount = 0;
+let isSpeaking = false;
+let heygenSessionId = null;
+let peerConnection = null;
+
+// Demo conversation scripts
+const DEMO_SCRIPTS = [
+  { trigger: 0, text: "Hello! I'm Alexandra, your personal consultant at Bellshire Homes. I'm here to help you find your perfect luxury residence in the Pacific Northwest. To get started — may I ask your name and what brings you to Bellshire Homes today?" },
+  { trigger: 1, text: "Wonderful to meet you! Before I show you our best available properties — could you share a rough budget range and which neighborhoods interest you? Bellevue, Kirkland, or are you open to both?" },
+  { trigger: 2, text: "Perfect. And in terms of architectural style — do you lean toward modern clean lines, or something warmer like transitional or craftsman? Also, are you working with a real estate broker currently?" },
+  { trigger: 3, text: "Excellent! Just one last thing — what's your timeline? Are you ready to move within a few months, or are you still in the early exploration phase? And could I get your email and phone so our team can follow up?" },
+  { trigger: 4, text: "Thank you so much! I've captured all your preferences. Based on what you've shared, I have 2–3 exceptional properties that would be a perfect match. Our team will reach out within 24 hours to schedule a private showing. Is there anything else you'd like to know?" }
+];
+
+let demoStep = 0;
+
+// ─── Launch ───────────────────────────────────────────
+function launchConsole() {
+  ANTHROPIC_KEY = document.getElementById('anthropic-key').value.trim();
+  HEYGEN_KEY = document.getElementById('heygen-key').value.trim();
+  HEYGEN_AVATAR_ID = document.getElementById('heygen-avatar-id').value.trim();
+
+  if (!ANTHROPIC_KEY && !IS_DEMO) {
+    alert('Введіть Anthropic API ключ або використайте Demo Mode');
+    return;
+  }
+  startConsole();
+}
+
+function launchDemo() {
+  IS_DEMO = true;
+  ANTHROPIC_KEY = document.getElementById('anthropic-key').value.trim();
+  startConsole();
+}
+
+function startConsole() {
+  document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('main-console').style.display = 'grid';
+
+  if (HEYGEN_KEY && HEYGEN_AVATAR_ID) {
+    initHeyGenStream();
+  }
+
+  setTimeout(() => {
+    if (IS_DEMO && !ANTHROPIC_KEY) {
+      showDemoMessage();
+    } else {
+      sendInitialMessage();
+    }
+  }, 800);
+}
+
+// ─── HeyGen Streaming ─────────────────────────────────
+async function initHeyGenStream() {
+  try {
+    // 1. Create new streaming session
+    const newRes = await fetch('https://api.heygen.com/v1/streaming.new', {
+      method: 'POST',
+      headers: {
+        'x-api-key': HEYGEN_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        quality: 'high',
+        avatar_name: HEYGEN_AVATAR_ID,
+        voice: { rate: 1.0 }
+      })
+    });
+    const newData = await newRes.json();
+    if (newData.code !== 100) throw new Error('HeyGen session.new failed: ' + JSON.stringify(newData));
+
+    const session = newData.data;
+    heygenSessionId = session.session_id;
+
+    // 2. Set up WebRTC peer connection
+    const iceServers = session.ice_servers2 || session.ice_servers || [];
+    peerConnection = new RTCPeerConnection({ iceServers });
+
+    // 3. Send ICE candidates to HeyGen as they're gathered
+    peerConnection.onicecandidate = async ({ candidate }) => {
+      if (candidate) {
+        await fetch('https://api.heygen.com/v1/streaming.ice', {
+          method: 'POST',
+          headers: { 'x-api-key': HEYGEN_KEY, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            session_id: heygenSessionId,
+            candidate: {
+              candidate: candidate.candidate,
+              sdpMid: candidate.sdpMid,
+              sdpMLineIndex: candidate.sdpMLineIndex
+            }
+          })
+        });
+      }
+    };
+
+    // 4. Attach incoming video stream to <video> element
+    peerConnection.ontrack = (event) => {
+      if (event.track.kind === 'video') {
+        const video = document.getElementById('avatar-video');
+        video.srcObject = event.streams[0];
+        video.style.display = 'block';
+        document.getElementById('avatar-img').style.display = 'none';
+      }
+    };
+
+    // 5. Process HeyGen's SDP offer and create answer
+    await peerConnection.setRemoteDescription(new RTCSessionDescription(session.sdp));
+    const answer = await peerConnection.createAnswer();
+    await peerConnection.setLocalDescription(answer);
+
+    // 6. Send our SDP answer to start the session
+    await fetch('https://api.heygen.com/v1/streaming.start', {
+      method: 'POST',
+      headers: { 'x-api-key': HEYGEN_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        session_id: heygenSessionId,
+        sdp: { type: answer.type, sdp: answer.sdp }
+      })
+    });
+
+    console.log('HeyGen Stream initialized, session:', heygenSessionId);
+  } catch (err) {
+    console.warn('HeyGen init failed, using static avatar:', err);
+    heygenSessionId = null;
+  }
+}
+
+async function speakHeyGen(text) {
+  if (!heygenSessionId || !HEYGEN_KEY) return;
+  try {
+    await fetch('https://api.heygen.com/v1/streaming.task', {
+      method: 'POST',
+      headers: { 'x-api-key': HEYGEN_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        session_id: heygenSessionId,
+        text: text,
+        task_type: 'talk'
+      })
+    });
+  } catch (err) { console.warn('HeyGen speak error:', err); }
+}
+
+async function stopHeyGenStream() {
+  if (!heygenSessionId || !HEYGEN_KEY) return;
+  try {
+    await fetch('https://api.heygen.com/v1/streaming.stop', {
+      method: 'POST',
+      headers: { 'x-api-key': HEYGEN_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: heygenSessionId })
+    });
+    heygenSessionId = null;
+  } catch (err) { console.warn('HeyGen stop error:', err); }
+}
+
+// ─── Claude API ───────────────────────────────────────
+const SYSTEM_PROMPT = `You are Alexandra, a warm and professional luxury real estate consultant at Bellshire Homes in Bellevue, WA.
+
+Your goal: naturally collect these fields through friendly conversation — never robotically one-by-one:
+- Full Name
+- Email
+- Phone
+- Budget ($2.8M-$3.4M / $3.4M-$4.1M / $4.1M-$5M / $5M-$6M / $6M+)
+- Preferred Area (Newport/Eastgate / Central Bellevue / West Bellevue / Kirkland / Open)
+- Home Style (Modern / Transitional / Traditional / Craftsman)
+- Timeline (Ready now / 3–6 months / 6–12 months / Just exploring)
+- Broker (Yes / No)
+
+Rules:
+- Keep responses SHORT: 2-3 sentences max
+- Combine multiple questions naturally in one message
+- Be warm, sophisticated, never pushy
+- Respond in the same language the user uses (English or Ukrainian)
+- After EACH response, append a JSON block like this (always on new line):
+<FIELDS>{"name":null,"email":null,"phone":null,"budget":"$3.4M–$4.1M","neighborhood":null,"style":"Modern","timeline":null,"broker":null,"complete":false}</FIELDS>
+- Only include confirmed data. null = unknown. Set "complete":true when ALL 8 fields are filled.`;
+
+async function askClaude(userMessage) {
+  conversationHistory.push({ role: 'user', content: userMessage });
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': ANTHROPIC_KEY,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-opus-4-5',
+      max_tokens: 512,
+      system: SYSTEM_PROMPT,
+      messages: conversationHistory
+    })
+  });
+
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+
+  const fullText = data.content[0].text;
+  conversationHistory.push({ role: 'assistant', content: fullText });
+
+  // Extract fields JSON
+  const match = fullText.match(/<FIELDS>([\s\S]*?)<\/FIELDS>/);
+  let fields = null;
+  if (match) {
+    try { fields = JSON.parse(match[1]); } catch(e) {}
+  }
+
+  // Clean display text
+  const displayText = fullText.replace(/<FIELDS>[\s\S]*?<\/FIELDS>/g, '').trim();
+  return { text: displayText, fields };
+}
+
+// ─── Initial message ──────────────────────────────────
+async function sendInitialMessage() {
+  showTyping();
+  try {
+    let response;
+    if (IS_DEMO && !ANTHROPIC_KEY) {
+      response = { text: DEMO_SCRIPTS[0].text, fields: null };
+      demoStep = 1;
+    } else {
+      conversationHistory = [];
+      response = await askClaude('Hello, I would like to find a luxury home.');
+    }
+    hideTyping();
+    addMessage('ai', response.text);
+    if (response.fields) updateForm(response.fields);
+    await speakHeyGen(response.text);
+  } catch (err) {
+    hideTyping();
+    addMessage('ai', "Hello! I'm Alexandra from Bellshire Homes. I'm here to help you find your perfect luxury residence. May I ask your name and what you're looking for?");
+  }
+}
+
+function showDemoMessage() {
+  setTimeout(() => {
+    addMessage('ai', DEMO_SCRIPTS[0].text);
+    demoStep = 1;
+  }, 500);
+}
+
+// ─── Send message ─────────────────────────────────────
+async function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  input.style.height = '22px';
+  document.getElementById('send-btn').disabled = true;
+
+  addMessage('user', text);
+  showTyping();
+
+  try {
+    let response;
+    if (IS_DEMO && !ANTHROPIC_KEY) {
+      await new Promise(r => setTimeout(r, 1200 + Math.random() * 800));
+      const script = DEMO_SCRIPTS[Math.min(demoStep, DEMO_SCRIPTS.length - 1)];
+      response = { text: script.text, fields: getDemoFields(demoStep) };
+      demoStep++;
+    } else {
+      response = await askClaude(text);
+    }
+
+    hideTyping();
+    addMessage('ai', response.text);
+    if (response.fields) updateForm(response.fields);
+    await speakHeyGen(response.text);
+  } catch (err) {
+    hideTyping();
+    addMessage('ai', "I apologize, there was a connection issue. Please try again.");
+    console.error(err);
+  }
+
+  document.getElementById('send-btn').disabled = false;
+}
+
+// Demo field progression
+function getDemoFields(step) {
+  const progression = [
+    {},
+    { name: "Reading from conversation..." },
+    { name: null, budget: "$3.4M–$4.1M", neighborhood: "Central Bellevue" },
+    { style: "Modern", broker: "No" },
+    { email: "client@email.com", phone: "+1 (425) 555 0123", timeline: "3–6 months" }
+  ];
+  const fields = { name: null, email: null, phone: null, budget: null, neighborhood: null, style: null, timeline: null, broker: null, complete: false };
+  for (let i = 0; i <= step && i < progression.length; i++) {
+    Object.assign(fields, progression[i]);
+  }
+  if (step >= 4) fields.complete = true;
+  return fields;
+}
+
+// ─── Form Update ──────────────────────────────────────
+function updateForm(fields) {
+  const map = {
+    name: 'name', email: 'email', phone: 'phone', budget: 'budget',
+    neighborhood: 'neighborhood', style: 'style', timeline: 'timeline', broker: 'broker'
+  };
+
+  let count = 0;
+  Object.entries(map).forEach(([key, id]) => {
+    if (fields[key] && fields[key] !== null) {
+      setField(id, fields[key]);
+      count++;
+    }
+  });
+
+  // Progress
+  const total = Object.keys(map).length;
+  const filled = document.querySelectorAll('.field-item.filled').length;
+  document.getElementById('progress-fill').style.width = (filled / total * 100) + '%';
+
+  if (fields.complete) {
+    setTimeout(() => {
+      document.getElementById('submit-area').classList.add('visible');
+    }, 600);
+  }
+}
+
+function setField(id, value) {
+  const item = document.getElementById('f-' + id);
+  const val = document.getElementById('v-' + id);
+  if (!item || !val) return;
+  if (item.classList.contains('filled')) return; // already filled
+
+  val.textContent = value;
+  val.classList.add('animating');
+  item.classList.add('filled');
+  setTimeout(() => val.classList.remove('animating'), 500);
+}
+
+// ─── Chat UI ──────────────────────────────────────────
+let typingEl = null;
+
+function addMessage(role, text) {
+  const area = document.getElementById('chat-area');
+  const msg = document.createElement('div');
+  msg.className = 'msg ' + role;
+
+  const avatarEl = document.createElement('div');
+  avatarEl.className = 'msg-avatar';
+  if (role === 'ai') {
+    avatarEl.innerHTML = '<img src="../images/alexandra.png" alt="A">';
+  } else {
+    avatarEl.textContent = 'You';
+    avatarEl.style.fontSize = '0.6rem';
+    avatarEl.style.color = 'rgba(255,255,255,0.5)';
+  }
+
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
+  bubble.textContent = text;
+
+  msg.appendChild(avatarEl);
+  msg.appendChild(bubble);
+  area.appendChild(msg);
+  area.scrollTop = area.scrollHeight;
+
+  if (role === 'ai') {
+    setSpeaking(true);
+    setTimeout(() => setSpeaking(false), Math.min(text.length * 60, 6000));
+    document.getElementById('status-text').textContent = 'Speaking...';
+    setTimeout(() => { document.getElementById('status-text').textContent = 'Online · Ready to help'; }, Math.min(text.length * 60, 6000));
+  }
+}
+
+function showTyping() {
+  const area = document.getElementById('chat-area');
+  const wrap = document.createElement('div');
+  wrap.className = 'msg ai';
+  wrap.id = 'typing-wrap';
+
+  const avatarEl = document.createElement('div');
+  avatarEl.className = 'msg-avatar';
+  avatarEl.innerHTML = '<img src="../images/alexandra.png">';
+
+  const indicator = document.createElement('div');
+  indicator.className = 'typing-indicator';
+  indicator.innerHTML = '<span></span><span></span><span></span>';
+
+  wrap.appendChild(avatarEl);
+  wrap.appendChild(indicator);
+  area.appendChild(wrap);
+  area.scrollTop = area.scrollHeight;
+  document.getElementById('status-text').textContent = 'Thinking...';
+}
+
+function hideTyping() {
+  const el = document.getElementById('typing-wrap');
+  if (el) el.remove();
+}
+
+function setSpeaking(val) {
+  const area = document.getElementById('avatar-area');
+  if (val) area.classList.add('speaking'); else area.classList.remove('speaking');
+}
+
+// ─── Input handling ───────────────────────────────────
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+  // Auto-resize
+  const el = document.getElementById('chat-input');
+  el.style.height = '22px';
+  el.style.height = Math.min(el.scrollHeight, 80) + 'px';
+}
+
+// ─── Submit ───────────────────────────────────────────
+function submitForm() {
+  document.getElementById('success-overlay').classList.add('show');
+  stopHeyGenStream();
+}
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => stopHeyGenStream());
+</script>
+</body>
+</html>
