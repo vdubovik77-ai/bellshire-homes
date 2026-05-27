@@ -38,6 +38,8 @@
   .step-title, .contact-title, .ai-form-title, .ai-name,
   .ai-success-card h3, .ai-setup-card h3,
   .ai-modal-header-title em, .ai-voice-title em,
+  .featured-label-hero, .featured-price, .featured-address,
+  .property-price, .property-card-title,
   em {
     font-family: var(--font-display) !important;
     font-weight: 700;
@@ -79,6 +81,15 @@
     font-weight: 500 !important;
     letter-spacing: 0.2em !important;
     text-transform: uppercase;
+  }
+
+  /* ───── Exception: featured-label-hero is a DISPLAY element, not a label ───── */
+  body .featured-label-hero {
+    font-family: var(--font-display) !important;
+    font-weight: 700 !important;
+    font-style: normal !important;
+    letter-spacing: 0.02em !important;
+    text-transform: none !important;
   }
 
   /* ───── Hero size bump (experiment) ───── */
@@ -550,10 +561,10 @@
     will-change: transform;
   }
 
-  /* "FOR SALE" label styled like hero italic serif */
+  /* "FOR SALE" label — upright Butler */
   .featured-label-hero {
     font-family: 'Butler', 'Cormorant Garamond', serif;
-    font-style: italic;
+    font-style: normal;
     font-weight: 400;
     font-size: clamp(1.3rem, 2.2vw, 2rem);
     color: var(--teal);
@@ -2873,7 +2884,7 @@
         id: '312',
         status: 'for-sale',
         priority: 1,
-        badgeText: 'For Sale \u2014 New Construction',
+        badgeText: 'Available for Presale',
         price: '$3,500,000',
         address: '312 160th Ave NE',
         city: 'Bellevue, WA 98008',
