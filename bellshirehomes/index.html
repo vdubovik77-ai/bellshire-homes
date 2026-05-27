@@ -129,6 +129,27 @@
     }
   }
 
+  /* ───── Property card media icons (Video / 3D / Features) — visible on mobile ─────
+     On desktop they only appear on card hover; on mobile (no hover), show them always
+     in a more compact, horizontal layout aligned to top-right of the image.        */
+  @media (max-width: 1024px) {
+    .prop-media-icons {
+      opacity: 1 !important;
+      flex-direction: row !important;
+      top: auto !important;
+      bottom: 12px !important;
+      right: 12px !important;
+      gap: 6px !important;
+    }
+    .prop-media-icon {
+      width: 34px !important;
+      height: 34px !important;
+      background: rgba(0,0,0,0.65) !important;
+    }
+    .prop-media-icon svg { width: 14px !important; height: 14px !important; }
+    .prop-media-icon.icon-3d { font-size: 0.58rem !important; }
+  }
+
   /* ───── Hero size bump (experiment) ───── */
   .hero-title {
     font-size: clamp(2.6rem, 7.5vw, 8rem) !important;
@@ -4261,8 +4282,10 @@
     card.addEventListener('mouseenter', function() { loadAndPlay(); });
     card.addEventListener('mouseleave', function() { video.pause(); });
 
-    // Mobile: IntersectionObserver — плавне проявлення при скролі
-    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+    // Mobile / narrow viewport: IntersectionObserver — auto-play when scrolled into view
+    // Use a robust check that also covers DevTools mobile mode (no real touchscreen)
+    var isMobileLike = ('ontouchstart' in window) || navigator.maxTouchPoints > 0 || window.innerWidth <= 1024;
+    if (isMobileLike) {
       var mobileVisible = false;
 
       var showTimer = null;
