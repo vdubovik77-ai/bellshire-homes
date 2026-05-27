@@ -106,7 +106,16 @@
       "Bash(curl -s --max-time 5 -r 0-31 https://settings-fwd-definitely-diy.trycloudflare.com/hero-new.mp4)",
       "Bash(xxd)",
       "Bash(ffmpeg -hide_banner -loglevel error -y -i hero-new.mp4 -vf 'scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:\\(ow-iw\\)/2:\\(oh-ih\\)/2' -c:v libx264 -preset slow -crf 23 -b:v 2500k -maxrate 3000k -bufsize 4000k -pix_fmt yuv420p -movflags +faststart -an hero-web.mp4)",
-      "Bash(ffmpeg -hide_banner -loglevel error -y -i /Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/bellshire-fonts-test/bellshirehomes/hero-new.mp4 -c copy -movflags +faststart /tmp/hero-new-faststart.mp4)"
+      "Bash(ffmpeg -hide_banner -loglevel error -y -i /Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/bellshire-fonts-test/bellshirehomes/hero-new.mp4 -c copy -movflags +faststart /tmp/hero-new-faststart.mp4)",
+      "Bash(md5 '/Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/Сайт Bellshire Homes/images/alexandra.png' /Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/bellshire-fonts-test/images/alexandra.png)",
+      "Bash(sips -g pixelWidth -g pixelHeight \"/Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/Сайт Bellshire Homes/images/alexandra.png\")",
+      "Bash(mdfind -name \"alexandra\")",
+      "Bash(md5 \"/Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/Сайт Bellshire Homes/images/alexandra.png\")",
+      "Bash(mkdir -p __TRACKED_VAR__/images)",
+      "Bash(cp '/Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/Сайт Bellshire Homes/images/alexandra.png' __TRACKED_VAR__/images/alexandra.png)",
+      "Bash(sed -i '' 's|\\\\.\\\\./images/alexandra\\\\.png|images/alexandra.png|g' __TRACKED_VAR__/index.html)",
+      "Bash(curl -s --max-time 8 -o /dev/null -w 'MAIN:   HTTP %{http_code}  |  size: %{size_download}\\\\n' https://bob-journalism-lafayette-historical.trycloudflare.com/images/alexandra.png?cb=__CMDSUB_OUTPUT__)",
+      "Bash(curl -s --max-time 8 -o /dev/null -w 'FONTS:  HTTP %{http_code}  |  size: %{size_download}\\\\n' https://settings-fwd-definitely-diy.trycloudflare.com/images/alexandra.png?cb=__CMDSUB_OUTPUT__)"
     ]
   }
 }

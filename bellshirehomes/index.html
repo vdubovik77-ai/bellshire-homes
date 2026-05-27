@@ -4862,7 +4862,7 @@ function aiAddMsg(role, text) {
   var chat = document.getElementById('ai-chat');
   var wrap = document.createElement('div'); wrap.className='ai-msg'+(role==='user'?' user-msg':'');
   var av = document.createElement('div'); av.className='ai-msg-av'+(role==='user'?' user-av':'');
-  av.innerHTML = role==='user' ? 'You' : '<img src="../images/alexandra.png" onerror="this.onerror=null;this.src=\'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=60&h=60&fit=crop&crop=face\'">';
+  av.innerHTML = role==='user' ? 'You' : '<img src="images/alexandra.png" onerror="this.onerror=null;this.src=\'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=60&h=60&fit=crop&crop=face\'">';
   var bub = document.createElement('div'); bub.className='ai-bubble'; bub.textContent=text;
   wrap.appendChild(av); wrap.appendChild(bub);
   chat.appendChild(wrap); chat.scrollTop=chat.scrollHeight;
@@ -4871,7 +4871,7 @@ function aiShowTyping() {
   var chat = document.getElementById('ai-chat');
   var wrap = document.createElement('div'); wrap.className='ai-msg'; wrap.id='ai-typing-wrap';
   var av = document.createElement('div'); av.className='ai-msg-av';
-  av.innerHTML='<img src="../images/alexandra.png" onerror="this.onerror=null;this.src=\'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=60&h=60&fit=crop&crop=face\'">';
+  av.innerHTML='<img src="images/alexandra.png" onerror="this.onerror=null;this.src=\'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=60&h=60&fit=crop&crop=face\'">';
   var ind = document.createElement('div'); ind.className='ai-typing'; ind.innerHTML='<span></span><span></span><span></span>';
   wrap.appendChild(av); wrap.appendChild(ind); chat.appendChild(wrap); chat.scrollTop=chat.scrollHeight;
   document.getElementById('ai-status-txt').textContent='Thinking...';
@@ -5002,7 +5002,7 @@ function aiVoiceSyncAvatar() {
     ring.innerHTML = ''; ring.appendChild(vv);
   } else {
     if (!ring.querySelector('img')) {
-      ring.innerHTML = '<img src="../images/alexandra.png" onerror="this.onerror=null;this.src=\'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=360&h=360&fit=crop&crop=face\'" alt="Alexandra">';
+      ring.innerHTML = '<img src="images/alexandra.png" onerror="this.onerror=null;this.src=\'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=360&h=360&fit=crop&crop=face\'" alt="Alexandra">';
     }
   }
 }
@@ -5971,7 +5971,7 @@ function aiRealtimeDisconnect() {
 
     <div class="ai-voice-avatar-wrap">
       <div class="ai-voice-ring" id="ai-voice-ring">
-        <img src="../images/alexandra.png" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1580489944761-15a19d654956?w=360&h=360&fit=crop&crop=face'" alt="Alexandra">
+        <img src="images/alexandra.png" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1580489944761-15a19d654956?w=360&h=360&fit=crop&crop=face'" alt="Alexandra">
       </div>
     </div>
 
@@ -6079,7 +6079,7 @@ function aiRealtimeDisconnect() {
     <div class="ai-left" id="ai-left" style="display:none;">
       <div class="ai-avatar-bar" id="ai-avatar-bar">
         <div class="ai-avatar-ring" id="ai-avatar-ring">
-          <img src="../images/alexandra.png" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1580489944761-15a19d654956?w=120&h=120&fit=crop&crop=face'" alt="Alexandra">
+          <img src="images/alexandra.png" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1580489944761-15a19d654956?w=120&h=120&fit=crop&crop=face'" alt="Alexandra">
         </div>
         <div>
           <div class="ai-name">Alexandra</div>
