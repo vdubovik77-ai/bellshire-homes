@@ -2002,6 +2002,23 @@
   body:has(.ai-modal-overlay.open) .ai-float-btn,
   body:has(.ai-voice-overlay.open) .ai-float-btn { display: none !important; }
   .ai-float-btn { bottom: 1rem !important; right: 1rem !important; padding: .65rem 1rem !important; font-size: .68rem !important; }
+
+  /* Property card stats row — prevent overflow of "4,517 SF" etc on narrow screens */
+  .property-meta {
+    gap: .55rem !important;
+    flex-wrap: nowrap !important;
+    justify-content: space-between !important;
+    letter-spacing: .08em !important;
+    font-size: .68rem !important;
+  }
+  .meta-item {
+    font-size: .68rem !important;
+    letter-spacing: .08em !important;
+    gap: .25rem !important;
+    white-space: nowrap;
+    min-width: 0;
+  }
+  .meta-item svg { width: 11px !important; height: 11px !important; flex-shrink: 0; }
 }
 
 /* ══════════════════════════════════════
