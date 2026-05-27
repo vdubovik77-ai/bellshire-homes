@@ -3177,34 +3177,45 @@
     if (_domReady && _videoReady) hidePreloader();
   }
 
-  // Примусово показуємо сайт через 5 секунд незалежно від відео
+  // Hard fallback: never hold the preloader longer than 1.5s
   setTimeout(function() {
     _videoReady = true;
     _domReady = true;
     tryHidePreloader();
-  }, 5000);
+  }, 1500);
 
   function setProgress(pct, label) {
     if (barFill) barFill.style.width = pct + '%';
     if (preloaderText && label) preloaderText.textContent = label;
   }
 
-  // Animate bar to 40% immediately
   setTimeout(() => setProgress(40, 'Loading'), 100);
 
-  // Video events
+  // ── Progressive playback: start as soon as first frame is decoded ──
+  // With +faststart MP4, `loadedmetadata` fires after just the moov atom is
+  // read (a few hundred KB). `loadeddata` fires when the first frame is ready
+  // — that's when we can play and let the rest stream in.
   if (heroVideo) {
-    heroVideo.addEventListener('loadeddata', () => {
-      setProgress(75, 'Preparing');
+    var tryPlayHero = function() {
+      heroVideo.play().catch(function() {
+        // Some browsers gate autoplay until user gesture — silent fail is OK.
+      });
+    };
+    heroVideo.addEventListener('loadedmetadata', function() {
+      setProgress(60, 'Loading');
+      tryPlayHero();
     });
-    heroVideo.addEventListener('canplay', () => {
+    heroVideo.addEventListener('loadeddata', function() {
+      // First frame is decoded — kill the preloader, video plays as it streams
       _videoReady = true;
       setProgress(95, 'Ready');
       heroVideo.classList.add('loaded');
       tryHidePreloader();
+      tryPlayHero();
     });
-    heroVideo.addEventListener('error', () => {
-      // Video failed - still show page with bg image
+    heroVideo.addEventListener('canplay', tryPlayHero);
+    heroVideo.addEventListener('progress', tryPlayHero);
+    heroVideo.addEventListener('error', function() {
       _videoReady = true;
       tryHidePreloader();
     });
