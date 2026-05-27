@@ -92,21 +92,52 @@
     text-transform: none !important;
   }
 
+  /* ───── Smooth per-element parallax for featured property card ─────
+     CSS `translate` is updated via JS; we just add subtle smoothing so
+     scroll-driven motion has buttery momentum on touch devices.            */
+  #featured-parallax-content #featured-badge,
+  #featured-parallax-content .featured-label-hero,
+  #featured-parallax-content #featured-price,
+  #featured-parallax-content .featured-price,
+  #featured-parallax-content #featured-address,
+  #featured-parallax-content .featured-address,
+  #featured-parallax-content #featured-city,
+  #featured-parallax-content .featured-city,
+  #featured-parallax-content #featured-stats,
+  #featured-parallax-content .featured-stats,
+  #featured-parallax-content .btn-primary {
+    transition: translate 0.12s linear, transform 0.12s linear;
+    will-change: translate, transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #featured-parallax-content > * {
+      transition: none !important;
+      translate: 0 !important;
+      transform: none !important;
+    }
+  }
+
   /* ───── Hero size bump (experiment) ───── */
   .hero-title {
-    font-size: clamp(3.5rem, 9vw, 8rem) !important;
+    font-size: clamp(2.6rem, 7.5vw, 8rem) !important;
     line-height: 1.02 !important;
     font-weight: 700 !important;
   }
   .hero-subtitle {
-    font-size: clamp(1.05rem, 1.4vw, 1.35rem) !important;
+    font-size: clamp(0.95rem, 1.4vw, 1.35rem) !important;
     line-height: 1.65 !important;
     max-width: 620px !important;
   }
   .hero-eyebrow,
   .hero .section-label {
-    font-size: 0.85rem !important;
+    font-size: 0.78rem !important;
     letter-spacing: 0.32em !important;
+  }
+  @media (max-width: 480px) {
+    .hero-title    { font-size: 2.4rem !important; line-height: 1.06 !important; }
+    .hero-subtitle { font-size: 0.95rem !important; }
   }
 
   /* ───── Force all italics to roman/upright ───── */
@@ -6010,7 +6041,7 @@ function aiRealtimeDisconnect() {
   update();
 })();
 
-// ===== SCROLL-DRIVEN VIDEO + PARALLAX =====
+// ===== SCROLL-DRIVEN VIDEO + PER-ELEMENT PARALLAX =====
 (function() {
   var track   = document.getElementById('featured-scroll-track');
   var vid     = document.getElementById('featured-scroll-video');
@@ -6018,6 +6049,7 @@ function aiRealtimeDisconnect() {
   if (!track || !vid) return;
 
   var raf = null;
+  var useTranslate = window.CSS && CSS.supports && CSS.supports('translate', '0px 1px');
 
   // Ensure video never auto-plays, is fully muted, force-preload
   vid.autoplay = false;
@@ -6025,7 +6057,37 @@ function aiRealtimeDisconnect() {
   vid.preload  = 'auto';
   vid.pause();
 
-  function getProgress() {
+  // Per-element parallax depths — slow (badge) → fast (stats/CTA)
+  // The visual order top-to-bottom matches the depth order, so layered drift feels organic.
+  var parallaxLayers = [];
+  if (content) {
+    var badge   = content.querySelector('#featured-badge') || content.querySelector('.featured-label-hero');
+    var price   = content.querySelector('#featured-price') || content.querySelector('.featured-price');
+    var addr    = content.querySelector('#featured-address') || content.querySelector('.featured-address');
+    var city    = content.querySelector('#featured-city') || content.querySelector('.featured-city');
+    var stats   = content.querySelector('#featured-stats') || content.querySelector('.featured-stats');
+    var cta     = content.querySelector('.btn-primary');
+    if (badge) parallaxLayers.push({ el: badge, depth: 0.18 });
+    if (price) parallaxLayers.push({ el: price, depth: 0.26 });
+    if (addr)  parallaxLayers.push({ el: addr,  depth: 0.30 });
+    if (city)  parallaxLayers.push({ el: city,  depth: 0.32 });
+    if (stats) parallaxLayers.push({ el: stats, depth: 0.40 });
+    if (cta)   parallaxLayers.push({ el: cta,   depth: 0.46 });
+    // GPU-acceleration hint for buttery-smooth rendering on mobile
+    parallaxLayers.forEach(function(it) {
+      it.el.style.willChange = useTranslate ? 'translate' : 'transform';
+      it.el.style.backfaceVisibility = 'hidden';
+    });
+  }
+
+  // Detect whether the sticky-track parallax is active (desktop only).
+  // On mobile (≤1024px), the track is `height: auto` so we fall back to
+  // a viewport-rect-based parallax that uses the content's position on screen.
+  function isStickyTrackActive() {
+    return track.offsetHeight > window.innerHeight * 1.2;
+  }
+
+  function getStickyProgress() {
     var rect     = track.getBoundingClientRect();
     var trackH   = track.offsetHeight;
     var vpH      = window.innerHeight;
@@ -6034,27 +6096,60 @@ function aiRealtimeDisconnect() {
     return Math.max(0, Math.min(1, scrolled / total));
   }
 
+  // Mobile parallax: returns a -1..1 value based on content position relative to viewport center.
+  // -1 = content is below viewport (just entering), 0 = centered, +1 = content has exited above.
+  function getViewportProgress() {
+    if (!content) return 0;
+    var rect = content.getBoundingClientRect();
+    var vpH  = window.innerHeight;
+    var center = rect.top + rect.height / 2;
+    return Math.max(-1, Math.min(1, (vpH / 2 - center) / vpH));
+  }
+
   function applyProgress() {
     raf = null;
-    var progress = getProgress();
+    var vpH = window.innerHeight;
+    var sticky = isStickyTrackActive();
+    var progress = sticky ? getStickyProgress() : 0;
 
-    // Seek video — works once metadata is loaded (readyState >= 1)
-    if (vid.readyState >= 1 && vid.duration) {
+    // Seek video — only when sticky-track is active (desktop)
+    if (sticky && vid.readyState >= 1 && vid.duration) {
       vid.currentTime = progress * vid.duration;
     }
 
-    // Parallax: text drifts up at 35% scroll speed
-    if (content) {
-      content.style.transform = 'translateY(-' + (progress * window.innerHeight * 0.35) + 'px)';
+    // Per-element parallax — different formula per mode
+    if (sticky) {
+      // Desktop: drift up as user scrolls through the 350vh track
+      parallaxLayers.forEach(function(item) {
+        var offset = -progress * vpH * item.depth;
+        applyOffset(item.el, offset);
+      });
+    } else {
+      // Mobile: drift based on content's position in viewport (bidirectional, organic)
+      var vp = getViewportProgress();   // -1 → 0 → +1
+      parallaxLayers.forEach(function(item) {
+        // Amplitude small enough to feel refined on small screens (~ depth * 80px max)
+        var offset = vp * 80 * item.depth;
+        applyOffset(item.el, offset);
+      });
+    }
+  }
+
+  function applyOffset(el, offset) {
+    if (useTranslate) {
+      el.style.setProperty('translate', '0px ' + offset.toFixed(2) + 'px');
+    } else {
+      el.style.transform = 'translate3d(0,' + offset.toFixed(2) + 'px,0)';
     }
   }
 
   function scheduleSeek() {
-    if (raf) cancelAnimationFrame(raf);   // cancel stale frame
-    raf = requestAnimationFrame(applyProgress); // schedule fresh one
+    if (raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(applyProgress);
   }
 
   window.addEventListener('scroll', scheduleSeek, { passive: true });
+  window.addEventListener('resize', scheduleSeek, { passive: true });
 
   // Sync as soon as metadata arrives
   vid.addEventListener('loadedmetadata', applyProgress);
