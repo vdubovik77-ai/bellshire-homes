@@ -1381,6 +1381,10 @@
     color: var(--teal);
     font-weight: 500;
   }
+  /* Hide "Showing N properties" overlay on mobile — it covers the map/cards */
+  @media (max-width: 1024px) {
+    .map-counter { display: none !important; }
+  }
 
   /* Leaflet controls dark theme */
   .leaflet-control-zoom a {
