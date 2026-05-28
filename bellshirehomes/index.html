@@ -1295,9 +1295,15 @@
   }
   .map-listing-details {
     display: flex;
-    gap: 0.8rem;
+    justify-content: flex-start;
+    gap: 0.9rem;
     font-size: 0.65rem;
     color: rgba(255,255,255,0.45);
+    flex-wrap: nowrap;
+  }
+  .map-listing-details span {
+    white-space: nowrap;   /* keep "5 Beds" / "4,400 SF" on one line */
+    flex-shrink: 0;
   }
   .map-listing-price {
     font-family: 'Butler', 'Cormorant Garamond', serif;
@@ -5760,11 +5766,25 @@ async function aiRealtimeOpenSession(stream) {
     if (!answerSdp || answerSdp.trim().length < 10) {
       throw new Error('Empty SDP answer from proxy');
     }
+    // Guard against a stale session: while we awaited the SDP round-trip the
+    // user may have closed the popup or switched voice (which calls
+    // aiRealtimeDisconnect + opens a NEW pc). Applying the old answer to a
+    // closed/replaced connection throws InvalidStateError. Bail out silently.
+    if (pc.signalingState === 'closed' || AI_RT.pc !== pc) {
+      console.log('[RT] Session superseded/closed before SDP answer — ignoring stale answer');
+      try { pc.close(); } catch(e){}
+      return;
+    }
     console.log('[RT] SDP answer received, setting remote description...');
     await pc.setRemoteDescription({ type: 'answer', sdp: answerSdp });
     console.log('[RT] Remote description set ✅');
 
   } catch(e) {
+    // Ignore the benign race where the pc was closed mid-negotiation
+    if (e && e.name === 'InvalidStateError' && (!AI_RT.pc || AI_RT.pc.signalingState === 'closed')) {
+      console.log('[RT] Ignoring InvalidStateError on closed/replaced connection');
+      return;
+    }
     console.error('[RT WebRTC]', e);
     if (st)    { st.textContent = '❌ ' + e.message.slice(0,80); st.style.color = 'rgba(224,82,82,.9)'; }
     if (badge) badge.textContent = '';
