@@ -119,7 +119,15 @@
       "Bash(curl -s --max-time 5 -o /dev/null -w 'GET /         : HTTP %{http_code}  |  size: %{size_download}\\\\n' https://utilize-institutes-circle-determination.trycloudflare.com/)",
       "Bash(curl -s --max-time 5 -o /dev/null -w 'GET /health   : HTTP %{http_code}  |  size: %{size_download}\\\\n' https://utilize-institutes-circle-determination.trycloudflare.com/health)",
       "Bash(curl -s --max-time 5 -o /dev/null -w 'GET /docs     : HTTP %{http_code}  |  size: %{size_download}\\\\n' https://utilize-institutes-circle-determination.trycloudflare.com/docs)",
-      "Bash(curl -s --max-time 5 https://utilize-institutes-circle-determination.trycloudflare.com/health)"
+      "Bash(curl -s --max-time 5 https://utilize-institutes-circle-determination.trycloudflare.com/health)",
+      "Bash(lsof -iTCP -sTCP:LISTEN -P)",
+      "Bash(xargs -r kill -9)",
+      "Bash(rm -f /tmp/bellshire-tunnels/*.log /tmp/bellshire-tunnels/*.out)",
+      "Bash(cloudflared tunnel *)",
+      "Bash(curl -s --max-time 4 http://localhost:8000/health)",
+      "Bash(awk '{print $2, $NF}')",
+      "Bash(lsof -iTCP:8000 -sTCP:LISTEN -P)",
+      "Bash(curl -s --max-time 8 -o /dev/null -w \"HTTP %{http_code}\\\\n\" \"https://occasionally-chester-warrior-roman.trycloudflare.com/health\")"
     ]
   }
 }
