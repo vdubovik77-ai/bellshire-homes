@@ -105,6 +105,25 @@
     padding: 0.35rem 0.95rem !important;
   }
 
+  /* ───── Property card stats (BEDS / BATHS / SF) — even 3-column layout ─────
+     The [class*=-label] catch-all gave .property-meta 0.3em tracking which
+     made each stat a different width + wrapped the numbers. Make 3 equal
+     columns with tight tracking so all cards line up consistently.            */
+  body .property-meta {
+    display: flex !important;
+    justify-content: space-between !important;
+    gap: .5rem !important;
+    letter-spacing: .06em !important;
+  }
+  body .property-meta .meta-item {
+    flex: 1 1 0 !important;
+    justify-content: flex-start !important;
+    letter-spacing: .06em !important;
+    font-size: .72rem !important;
+    white-space: nowrap !important;
+    min-width: 0 !important;
+  }
+
   /* ───── Smooth block-parallax for featured property text layer ─────
      The whole #featured-parallax-content moves as ONE layer above the image.
      Children must NOT have their own transforms or transitions —
