@@ -130,7 +130,14 @@
       "Bash(curl -s --max-time 8 -o /dev/null -w \"HTTP %{http_code}\\\\n\" \"https://occasionally-chester-warrior-roman.trycloudflare.com/health\")",
       "Bash(awk '/'\\\\''1224'\\\\'': \\\\{/,/\\\\]/' /Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/bellshire-fonts-test/bellshirehomes/index.html)",
       "Bash(grep -nA6 '\\\\.map-sidebar {' /Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/bellshire-fonts-test/bellshirehomes/index.html)",
-      "Bash(grep -nA6 'map-container-wrap {' /Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/bellshire-fonts-test/bellshirehomes/index.html)"
+      "Bash(grep -nA6 'map-container-wrap {' /Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/bellshire-fonts-test/bellshirehomes/index.html)",
+      "Bash(perl -0pi -e 's/var d = new Date\\\\\\(m\\\\.date \\\\+ '\\\\''T'\\\\'' \\\\+ m\\\\.time \\\\+ '\\\\'':00'\\\\''\\\\\\);/var d = aiParseMeetingDate\\(m\\);/g' /Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/bellshire-fonts-test/bellshirehomes/index.html)",
+      "Bash(perl -0pi -e 's/var d = new Date\\\\\\(m\\\\.date \\\\+ '\\\\''T'\\\\'' \\\\+ \\\\\\(m\\\\.time\\\\|\\\\|'\\\\''14:00'\\\\''\\\\\\) \\\\+ '\\\\'':00'\\\\''\\\\\\);/var d = aiParseMeetingDate\\(m\\);/g' /Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/bellshire-fonts-test/bellshirehomes/index.html)",
+      "Bash(perl -0pi -e 's/var d = new Date\\\\\\(m\\\\.date \\\\+ '\\\\''T'\\\\'' \\\\+ m\\\\.time \\\\+ '\\\\'':00'\\\\''\\\\\\);/var d = aiParseMeetingDate\\(m\\);/g' '/Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/Сайт Bellshire Homes/bellshirehomes/index.html')",
+      "Bash(perl -0pi -e 's/var d = new Date\\\\\\(m\\\\.date \\\\+ '\\\\''T'\\\\'' \\\\+ \\\\\\(m\\\\.time\\\\|\\\\|'\\\\''14:00'\\\\''\\\\\\) \\\\+ '\\\\'':00'\\\\''\\\\\\);/var d = aiParseMeetingDate\\(m\\);/g' '/Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/Сайт Bellshire Homes/bellshirehomes/index.html')",
+      "Bash(perl -0pi -e 's/var d = new Date\\\\\\(m\\\\.date \\\\+ '\\\\''T'\\\\'' \\\\+ \\\\\\(m\\\\.time \\\\|\\\\| '\\\\''14:00'\\\\''\\\\\\) \\\\+ '\\\\'':00'\\\\''\\\\\\);/var d = aiParseMeetingDate\\(m\\);/g' '/Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/Сайт Bellshire Homes/bellshirehomes/index.html')",
+      "Bash(curl -s --max-time 3 http://localhost:8000/health)",
+      "Bash(curl -s --max-time 15 -X POST http://localhost:8000/analyze -H 'Content-Type: application/json' -d '{ *)"
     ]
   }
 }
