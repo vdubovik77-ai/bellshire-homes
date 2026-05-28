@@ -127,7 +127,8 @@
       "Bash(curl -s --max-time 4 http://localhost:8000/health)",
       "Bash(awk '{print $2, $NF}')",
       "Bash(lsof -iTCP:8000 -sTCP:LISTEN -P)",
-      "Bash(curl -s --max-time 8 -o /dev/null -w \"HTTP %{http_code}\\\\n\" \"https://occasionally-chester-warrior-roman.trycloudflare.com/health\")"
+      "Bash(curl -s --max-time 8 -o /dev/null -w \"HTTP %{http_code}\\\\n\" \"https://occasionally-chester-warrior-roman.trycloudflare.com/health\")",
+      "Bash(awk '/'\\\\''1224'\\\\'': \\\\{/,/\\\\]/' /Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/bellshire-fonts-test/bellshirehomes/index.html)"
     ]
   }
 }
