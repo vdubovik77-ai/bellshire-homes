@@ -1295,15 +1295,18 @@
   }
   .map-listing-details {
     display: flex;
-    justify-content: flex-start;
-    gap: 0.9rem;
-    font-size: 0.65rem;
+    justify-content: space-between;
+    gap: 0.4rem;
+    font-size: 0.6rem;
+    letter-spacing: 0;
     color: rgba(255,255,255,0.45);
     flex-wrap: nowrap;
+    width: 100%;
   }
   .map-listing-details span {
     white-space: nowrap;   /* keep "5 Beds" / "4,400 SF" on one line */
-    flex-shrink: 0;
+    flex: 0 1 auto;
+    letter-spacing: 0;
   }
   .map-listing-price {
     font-family: 'Butler', 'Cormorant Garamond', serif;
