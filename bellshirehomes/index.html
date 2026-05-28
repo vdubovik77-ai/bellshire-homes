@@ -4912,7 +4912,7 @@ function aiShowMeetingCard(m) {
   }
 
   // Format date
-  var d = new Date(m.date + 'T' + m.time + ':00');
+  var d = aiParseMeetingDate(m);
   var opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
   var dateStr = d.toLocaleDateString('en-US', opts);
   var timeStr = d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
@@ -4948,7 +4948,7 @@ function aiShowMeetingCard(m) {
 
 // Update existing meeting card in chat when date/time is corrected
 function aiUpdateMeetingCard(m) {
-  var d = new Date(m.date + 'T' + (m.time||'14:00') + ':00');
+  var d = aiParseMeetingDate(m);
   var dateStr = d.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
   var timeStr = d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
   var calLink  = aiCalendarLink(m);
@@ -4983,12 +4983,27 @@ function aiOpenMailAfterCal(mailLink) {
   }, 600);
 }
 
-function aiCalendarLink(m) {
-  // Format dates: YYYYMMDDTHHmmss
-  function fmtDt(dateStr, timeStr) {
-    return (dateStr + 'T' + timeStr + ':00').replace(/[-:]/g,'');
+// Robustly parse a meeting's date+time into a valid Date.
+// Guards against malformed/empty values that produced "1901" in the calendar.
+function aiParseMeetingDate(m) {
+  var ds = (m && m.date ? String(m.date) : '').slice(0, 10);
+  var ts = (m && m.time ? String(m.time) : '10:00').slice(0, 5);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(ds)) ds = '';
+  if (!/^\d{2}:\d{2}$/.test(ts)) ts = '10:00';
+  var d = ds ? new Date(ds + 'T' + ts + ':00') : new Date(NaN);
+  // Invalid, or absurd year → fall back to a week from now at the given time
+  if (isNaN(d.getTime()) || d.getFullYear() < 2020) {
+    var fb = new Date();
+    fb.setDate(fb.getDate() + 7);
+    var hm = ts.split(':');
+    fb.setHours(parseInt(hm[0],10) || 10, parseInt(hm[1],10) || 0, 0, 0);
+    return fb;
   }
-  var d = new Date(m.date + 'T' + m.time + ':00');
+  return d;
+}
+
+function aiCalendarLink(m) {
+  var d = aiParseMeetingDate(m);
   var end = new Date(d.getTime() + (m.duration||60)*60000);
   function pad(n){ return n<10?'0'+n:n; }
   function toLocal(dt) {
@@ -5866,7 +5881,7 @@ function aiShowMeetingInVoice(m) {
   var box = document.getElementById('ai-voice-meeting');
   if (!box) return;
 
-  var d = new Date(m.date + 'T' + (m.time || '14:00') + ':00');
+  var d = aiParseMeetingDate(m);
   var dateStr = d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' });
   var timeStr = d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
   var calLink  = aiCalendarLink(m);
