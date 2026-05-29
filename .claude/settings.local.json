@@ -142,7 +142,13 @@
       "Bash(nohup .venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000)",
       "Bash(echo \"started $!\")",
       "Bash(curl -s --max-time 20 -X POST http://localhost:8000/analyze -H 'Content-Type: application/json' -d '{ *)",
-      "Bash(git -c user.email=dev@bellshire.local -c user.name=Dev commit -m 'Multi-meeting scheduling + final verification step \\(main version\\) *)"
+      "Bash(git -c user.email=dev@bellshire.local -c user.name=Dev commit -m 'Multi-meeting scheduling + final verification step \\(main version\\) *)",
+      "Bash(curl -s --max-time 2 -o /dev/null -w \"8000: %{http_code}\\\\n\" http://localhost:8000/health)",
+      "Bash(curl -s --max-time 2 -o /dev/null -w \"3000: %{http_code}\\\\n\" http://localhost:3000/)",
+      "Bash(curl -s --max-time 2 -o /dev/null -w \"3001: %{http_code}\\\\n\" http://localhost:3001/)",
+      "Bash(pkill -f \"cloudflared tunnel\")",
+      "Bash(rm -f /tmp/bellshire-tunnels/*.log)",
+      "Bash(wait)"
     ]
   }
 }
