@@ -4670,7 +4670,8 @@ function aiAnalyzeConversation() {
     .then(function(r){ return r.json(); })
     .then(function(data) {
       if (data.fields) aiUpdateForm(data.fields);
-      if (data.meeting && !AI.meetingScheduled) aiShowMeetingCard(data.meeting);
+      var meetings = data.meetings || (data.meeting ? [data.meeting] : []);
+      if (meetings.length && !AI.meetingScheduled) aiShowMeetingsCard(meetings);
     })
     .catch(function(e){ console.warn('[analyze]', e); });
   }, 600);
@@ -5626,21 +5627,17 @@ function aiVoiceExtractFields() {
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (data.fields) aiUpdateForm(data.fields);
-      if (data.meeting) {
-        var m = data.meeting;
-        // Show/update meeting card in voice popup whenever date or time changes
-        var prev = AI.lastMeeting;
-        var changed = !prev || prev.date !== m.date || prev.time !== m.time || prev.property !== m.property;
-        if (changed) {
-          AI.lastMeeting = m;
-          aiShowMeetingInVoice(m);
-          // Only auto-open calendar/email once per confirmed meeting
-          if (!AI.meetingScheduled) {
-            AI.meetingScheduled = true;
-            setTimeout(function() { aiShowMeetingCard(m); }, 600);
-          } else {
-            // Update existing chat card without auto-opening again
-            aiUpdateMeetingCard(m);
+      var meetings = data.meetings || (data.meeting ? [data.meeting] : []);
+      if (meetings.length) {
+        var sig = aiMeetingsSig(meetings);
+        if (sig !== AI.lastMeetingsSig) {
+          AI.lastMeetingsSig = sig;
+          AI.lastMeeting = meetings[0];
+          var firstTime = !AI.scheduleAutoOpened;
+          aiShowMeetingsInVoice(meetings, firstTime);
+          if (firstTime) {
+            AI.scheduleAutoOpened = true;
+            setTimeout(function() { aiShowMeetingsCard(meetings); }, 600);
           }
         }
       }
@@ -5650,7 +5647,107 @@ function aiVoiceExtractFields() {
 }
 
 // Show meeting card inside the voice popup + auto-open Calendar & Email
-function aiShowMeetingInVoice(m) {
+// ── Multi-meeting helpers ──
+function aiMeetingsSig(meetings) {
+  return (meetings || []).map(function(m){
+    return m.property+'|'+m.date+'|'+m.time+'|'+(m.clientEmail||'')+'|'+(m.clientName||'');
+  }).join('||');
+}
+function aiCombinedMailtoLink(meetings) {
+  if (!meetings || !meetings.length) return '#';
+  if (meetings.length === 1) {
+    var d1 = aiParseMeetingDate(meetings[0]);
+    return aiMailtoLink(meetings[0],
+      d1.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'}),
+      d1.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}));
+  }
+  var m0 = meetings[0];
+  var subject = encodeURIComponent('Bellshire Homes — Your Tour Schedule (' + meetings.length + ' appointments)');
+  var sched = meetings.map(function(m, i){
+    var d = aiParseMeetingDate(m);
+    var ds = d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+    var ts = d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+    return (i+1) + '. ' + (m.property||'Property Tour') + '\n   📅 ' + ds + '\n   🕐 ' + ts + ' PST';
+  }).join('\n\n');
+  var body = encodeURIComponent(
+    'Dear ' + (m0.clientName||'Valued Client') + ',\n\n'
+    + 'Your private showings with Bellshire Homes are confirmed:\n\n' + sched + '\n\n'
+    + 'Calendar invites for each appointment are available via the links in our chat.\n\n'
+    + 'We look forward to showing you these exceptional properties.\n\n'
+    + 'Warm regards,\nAlexandra\nBellshire Homes\noffice@bellshireinc.com\n+1 (425) 658 6939'
+  );
+  return 'mailto:' + (m0.clientEmail||'') + '?subject=' + subject + '&body=' + body;
+}
+function aiShowMeetingsInVoice(meetings, autoOpen) {
+  var box = document.getElementById('ai-voice-meeting');
+  if (!box || !meetings || !meetings.length) return;
+  if (meetings.length === 1) { aiShowMeetingInVoice(meetings[0], autoOpen); return; }
+  var mailLink = aiCombinedMailtoLink(meetings);
+  var rows = meetings.map(function(m){
+    var d = aiParseMeetingDate(m);
+    var ds = d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+    var ts = d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+    var cal = aiCalendarLink(m);
+    return '<div style="padding:.6rem 0;border-top:1px solid rgba(74,158,149,.18);">'
+      + '<div style="font-size:.9rem;color:rgba(255,255,255,.95);font-weight:600;margin-bottom:.2rem;">' + (m.property||'Property Tour') + '</div>'
+      + '<div style="font-size:.78rem;color:rgba(255,255,255,.6);margin-bottom:.4rem;">📅 ' + ds + ' · 🕐 ' + ts + ' PST</div>'
+      + '<a href="' + cal + '" target="_blank" style="display:inline-block;background:#4a9e95;color:#fff;text-decoration:none;padding:.45rem .8rem;border-radius:8px;font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;">📅 Add to Calendar</a>'
+      + '</div>';
+  }).join('');
+  box.innerHTML =
+    '<div style="font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:#4a9e95;margin-bottom:.5rem;font-weight:700;text-align:center;">✓ ' + meetings.length + ' Tours Confirmed</div>'
+    + (meetings[0].clientEmail ? '<div style="font-size:.78rem;color:rgba(255,255,255,.55);margin-bottom:.4rem;text-align:center;word-break:break-all;">✉ ' + meetings[0].clientEmail + '</div>' : '')
+    + rows
+    + '<a href="' + mailLink + '" target="_blank" style="display:block;text-align:center;margin-top:.7rem;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.85);text-decoration:none;padding:.7rem;border-radius:10px;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">✉ Email Full Schedule</a>';
+  box.style.display = 'block';
+  if (autoOpen) {
+    setTimeout(function() {
+      meetings.forEach(function(m, i){ setTimeout(function(){ aiOpenLink(aiCalendarLink(m)); }, i*900); });
+      setTimeout(function(){ aiOpenLink(mailLink); }, meetings.length*900 + 400);
+    }, 800);
+  }
+}
+function aiShowMeetingsCard(meetings) {
+  if (!meetings || !meetings.length) return;
+  if (meetings.length === 1) { aiShowMeetingCard(meetings[0]); return; }
+  AI.meetingScheduled = true;
+  var left = document.getElementById('ai-left'), setup = document.getElementById('ai-setup');
+  if (left && left.style.display === 'none') {
+    if (setup) setup.style.display = 'none';
+    left.style.display = 'flex';
+    var right = document.getElementById('ai-right'); if (right) right.style.display = 'flex';
+  }
+  var mailLink = aiCombinedMailtoLink(meetings);
+  var rows = meetings.map(function(m){
+    var d = aiParseMeetingDate(m);
+    var ds = d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+    var ts = d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+    var cal = aiCalendarLink(m);
+    return '<div style="padding:.7rem 0;border-top:1px solid rgba(74,158,149,.18);">'
+      + '<div style="font-size:.92rem;color:rgba(255,255,255,.92);font-weight:600;margin-bottom:.2rem;">' + (m.property||'Property Tour') + '</div>'
+      + '<div style="font-size:.8rem;color:rgba(255,255,255,.55);margin-bottom:.45rem;">📅 ' + ds + ' · 🕐 ' + ts + ' PST</div>'
+      + '<a href="' + cal + '" target="_blank" style="display:inline-flex;align-items:center;gap:.4rem;background:#4a9e95;color:#fff;text-decoration:none;padding:.5rem 1rem;border-radius:9px;font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;">📅 Add to Calendar</a>'
+      + '</div>';
+  }).join('');
+  var chat = document.getElementById('ai-chat');
+  var card = document.createElement('div');
+  card.setAttribute('data-meeting-card','1');
+  card.style.cssText = 'margin:.8rem 0 .4rem; background:linear-gradient(135deg,rgba(74,158,149,.18),rgba(74,158,149,.06)); border:1.5px solid rgba(74,158,149,.45); border-radius:16px; padding:1.4rem; font-family:Inter,sans-serif;';
+  card.innerHTML =
+    '<div style="font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:#4a9e95;margin-bottom:.7rem;font-weight:600;">✓ ' + meetings.length + ' Tours Scheduled</div>'
+    + (meetings[0].clientEmail ? '<div style="font-size:.8rem;color:rgba(255,255,255,.55);margin-bottom:.3rem;">✉ Confirmation → ' + meetings[0].clientEmail + '</div>' : '')
+    + rows
+    + '<a href="' + mailLink + '" target="_blank" style="display:inline-flex;align-items:center;gap:.4rem;margin-top:.7rem;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.8);text-decoration:none;padding:.6rem 1.2rem;border-radius:9px;font-size:.72rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;">✉ Email Full Schedule</a>';
+  chat.appendChild(card);
+  chat.scrollTop = chat.scrollHeight;
+  document.getElementById('ai-submit-area').classList.add('show');
+  setTimeout(function() {
+    meetings.forEach(function(m, i){ setTimeout(function(){ aiOpenLink(aiCalendarLink(m)); }, i*900); });
+    setTimeout(function(){ aiOpenLink(mailLink); }, meetings.length*900 + 400);
+  }, 1000);
+}
+
+function aiShowMeetingInVoice(m, autoOpen) {
   var box = document.getElementById('ai-voice-meeting');
   if (!box) return;
 
@@ -5673,11 +5770,13 @@ function aiShowMeetingInVoice(m) {
     + '</div>';
   box.style.display = 'block';
 
-  // Auto-open calendar then email
-  setTimeout(function() {
-    aiOpenLink(calLink);
-    setTimeout(function() { aiOpenLink(mailLink); }, 1200);
-  }, 800);
+  // Auto-open calendar then email — only on first confirmation
+  if (autoOpen) {
+    setTimeout(function() {
+      aiOpenLink(calLink);
+      setTimeout(function() { aiOpenLink(mailLink); }, 1200);
+    }, 800);
+  }
 }
 
 // Reliable link opener — bypasses popup blockers via temporary anchor click
