@@ -148,7 +148,14 @@
       "Bash(curl -s --max-time 2 -o /dev/null -w \"3001: %{http_code}\\\\n\" http://localhost:3001/)",
       "Bash(pkill -f \"cloudflared tunnel\")",
       "Bash(rm -f /tmp/bellshire-tunnels/*.log)",
-      "Bash(wait)"
+      "Bash(wait)",
+      "Bash(curl -s --max-time 2 -o /dev/null -w \"8000 backend: %{http_code}\\\\n\" http://localhost:8000/health)",
+      "Bash(curl -s --max-time 2 -o /dev/null -w \"3000 main:    %{http_code}\\\\n\" http://localhost:3000/)",
+      "Bash(curl -s --max-time 2 -o /dev/null -w \"3001 fonts:   %{http_code}\\\\n\" http://localhost:3001/)",
+      "Bash(pkill -f \"cloudflared tunnel\" 2>/dev/null *)",
+      "Bash(nslookup polyester-lens-surrounded-portable.trycloudflare.com)",
+      "Bash(curl -s --max-time 10 --resolve polyester-lens-surrounded-portable.trycloudflare.com:443:104.16.231.132 -o /dev/null -w 'HTTP %{http_code}\\\\n' https://polyester-lens-surrounded-portable.trycloudflare.com/health)",
+      "Bash(dscacheutil -flushcache)"
     ]
   }
 }
