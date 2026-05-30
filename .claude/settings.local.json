@@ -157,7 +157,18 @@
       "Bash(curl -s --max-time 10 --resolve polyester-lens-surrounded-portable.trycloudflare.com:443:104.16.231.132 -o /dev/null -w 'HTTP %{http_code}\\\\n' https://polyester-lens-surrounded-portable.trycloudflare.com/health)",
       "Bash(dscacheutil -flushcache)",
       "Bash(curl -s --max-time 30 -o /dev/null -w \"HTTP %{http_code} | size %{size_download}\\\\n\" https://bellshire-backend.onrender.com/health)",
-      "Bash(curl -s --max-time 30 https://bellshire-backend.onrender.com/health)"
+      "Bash(curl -s --max-time 30 https://bellshire-backend.onrender.com/health)",
+      "Bash(xargs -I{} ls -l \"{}\")",
+      "Bash(awk '$5>25000000 {printf \"  %4sM  %s\\\\n\", int\\($5/1048576\\), $NF}')",
+      "Bash(awk '$5>10000000 && $5<=25000000 {printf \"  %4sM  %s\\\\n\", int\\($5/1048576\\), $NF}')",
+      "Bash(grep -E '\\\\.\\(mp4|mov|avi|webm\\)$')",
+      "Bash(xargs -I{} ls -lh \"{}\")",
+      "Bash(awk '{print \"  \"$5\"  \"$NF}')",
+      "Bash(xargs -I{} stat -f \"%z %N\" \"{}\")",
+      "Bash(awk '$1>10000000 {printf \"  %4sM  %s\\\\n\", int\\($1/1048576\\), $2}')",
+      "Bash(git lfs *)",
+      "Bash(ffmpeg -hide_banner -loglevel error -y -i bellshirehomes/hero-new.mp4 -vf 'scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:\\(ow-iw\\)/2:\\(oh-ih\\)/2' -c:v libx264 -preset slow -crf 23 -b:v 2200k -maxrate 2800k -bufsize 4500k -pix_fmt yuv420p -movflags +faststart -an /tmp/hero-encoded.mp4)",
+      "Bash(awk '{print \"  new size: \"$5}')"
     ]
   }
 }
