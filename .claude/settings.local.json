@@ -168,7 +168,17 @@
       "Bash(awk '$1>10000000 {printf \"  %4sM  %s\\\\n\", int\\($1/1048576\\), $2}')",
       "Bash(git lfs *)",
       "Bash(ffmpeg -hide_banner -loglevel error -y -i bellshirehomes/hero-new.mp4 -vf 'scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:\\(ow-iw\\)/2:\\(oh-ih\\)/2' -c:v libx264 -preset slow -crf 23 -b:v 2200k -maxrate 2800k -bufsize 4500k -pix_fmt yuv420p -movflags +faststart -an /tmp/hero-encoded.mp4)",
-      "Bash(awk '{print \"  new size: \"$5}')"
+      "Bash(awk '{print \"  new size: \"$5}')",
+      "Bash(gh api *)",
+      "Bash(curl -s --max-time 15 -o /dev/null -w \"HTTP %{http_code} | size %{size_download}\\\\n\" \"https://bellshire-homes-font.pages.dev/\")",
+      "Bash(curl -s --max-time 15 \"https://bellshire-homes-font.pages.dev/\")",
+      "Bash(curl -s --max-time 15 -o /dev/null -w \"HTTP %{http_code} | size %{size_download}\\\\n\" \"https://bellshire-homes.pages.dev/\")",
+      "Bash(curl -s --max-time 10 -X OPTIONS -H 'Origin: __TRACKED_VAR__' -H 'Access-Control-Request-Method: POST' -o /dev/null -w ' HTTP %{http_code} | allowed: %{header_json}\\\\n' https://bellshire-backend.onrender.com/conversation/save)",
+      "Bash(sed -i '' 's|selectedVoice: '\\\\''shimmer'\\\\'',|selectedVoice: '\\\\''sage'\\\\'',|' '/Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/Сайт Bellshire Homes/bellshirehomes/index.html')",
+      "Bash(sed -i '' 's|<button class=\"ai-voice-btn active\" id=\"ai-voice-btn-shimmer\"|<button class=\"ai-voice-btn\" id=\"ai-voice-btn-shimmer\"|' '/Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/Сайт Bellshire Homes/bellshirehomes/index.html')",
+      "Bash(sed -i '' 's|<button class=\"ai-voice-btn\" id=\"ai-voice-btn-sage\"|<button class=\"ai-voice-btn active\" id=\"ai-voice-btn-sage\"|' '/Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/Сайт Bellshire Homes/bellshirehomes/index.html')",
+      "Bash(sed -i '' 's|>молодий жіночий ✨<|>спокійний жіночий 🌿<|' '/Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/Сайт Bellshire Homes/bellshirehomes/index.html')",
+      "Bash(grep -nE 'selectedVoice:|active.*ai-voice-btn-sage|active.*ai-voice-btn-shimmer|>спокійний жіночий|.ai-voice-selector,$' '/Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/Сайт Bellshire Homes/bellshirehomes/index.html')"
     ]
   }
 }

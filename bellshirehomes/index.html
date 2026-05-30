@@ -2026,6 +2026,10 @@
   body:has(.ai-voice-overlay.open) .ai-float-btn { display: none !important; }
   .ai-float-btn { bottom: 1rem !important; right: 1rem !important; padding: .65rem 1rem !important; font-size: .68rem !important; }
 
+  /* Voice popup on mobile: hide voice-selector + description — voice is fixed to Sage */
+  .ai-voice-selector,
+  .ai-voice-desc { display: none !important; }
+
   /* Property card stats row — prevent overflow of "4,517 SF" etc on narrow screens */
   .property-meta {
     gap: .55rem !important;
@@ -5455,7 +5459,7 @@ var AI_RT = {
   pc: null, dc: null, audioEl: null,
   active: false, stream: null,
   transcript: '', userTranscript: '',
-  selectedVoice: 'shimmer',
+  selectedVoice: 'sage',
   lastAddedAI: ''   // tracks last AI text added to chat (for dedup across event fallbacks)
 };
 
@@ -6187,14 +6191,14 @@ function aiRealtimeDisconnect() {
 
     <!-- Voice selector (locked while session active) -->
     <div class="ai-voice-selector" id="ai-voice-selector">
-      <button class="ai-voice-btn active" id="ai-voice-btn-shimmer" onclick="aiSetVoice('shimmer')">Shimmer <span>♀</span></button>
+      <button class="ai-voice-btn" id="ai-voice-btn-shimmer" onclick="aiSetVoice('shimmer')">Shimmer <span>♀</span></button>
       <button class="ai-voice-btn" id="ai-voice-btn-coral"   onclick="aiSetVoice('coral')">Coral <span>♀</span></button>
-      <button class="ai-voice-btn" id="ai-voice-btn-sage"    onclick="aiSetVoice('sage')">Sage <span>♀</span></button>
+      <button class="ai-voice-btn active" id="ai-voice-btn-sage"    onclick="aiSetVoice('sage')">Sage <span>♀</span></button>
       <button class="ai-voice-btn" id="ai-voice-btn-alloy"   onclick="aiSetVoice('alloy')">Alloy <span>♂</span></button>
       <button class="ai-voice-btn" id="ai-voice-btn-ash"     onclick="aiSetVoice('ash')">Ash <span>♂</span></button>
       <button class="ai-voice-btn" id="ai-voice-btn-verse"   onclick="aiSetVoice('verse')">Verse <span>♂</span></button>
     </div>
-    <div class="ai-voice-desc" id="ai-voice-desc">молодий жіночий ✨</div>
+    <div class="ai-voice-desc" id="ai-voice-desc">спокійний жіночий 🌿</div>
 
     <!-- ── Content area: fills all space down to input ── -->
     <div class="ai-voice-content" id="ai-voice-content">
