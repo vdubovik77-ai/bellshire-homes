@@ -7198,8 +7198,32 @@ var AI_MAP_ID = { '10425':6, '312':7, '1224':1, '218':2, '1071':3, '1305':4, '49
 // living, dining, backyard, garage, view, basement, office, primary_bath.
 var PROPERTY_PHOTO_TAGS = {
   // Tagged by visual review of each gallery (0-based indices).
-  '312':   { exterior:[0,1,2,36,40,41], kitchen:[12,14,15,16,17], master:[25], bedroom:[23,25,26,32,34], bathroom:[19,24,27,28,33,35], living:[4,5,6,7,8,21,22], dining:[13,18,47], backyard:[9,10,11,37,38,39], view:[42,43,44,45,46] },
-  '218':   { exterior:[0], living:[3,4], kitchen:[5,9], dining:[1,6,7], backyard:[10] },
+  // 312 — all 48 gallery photos reviewed (0-based gallery index; gallery skips broken #16,#32)
+  '312':   {
+    exterior:[0,1,39,40,41], front:[0,1,40,41], garage:[0,40], aerial:[42,43,44,45,46],
+    entry:[2,3,36],
+    living:[4,7,8,21,22,47], great_room:[5,6], family:[22],
+    stairs:[5,6,20],
+    kitchen:[12,14,15,16,17],
+    dining:[13,18],
+    guest_bath:[19], powder:[19], half_bath:[19],
+    bedroom:[23,32,34],
+    master:[25,26], master_bedroom:[25,26],
+    master_bath:[27,28], master_bathroom:[27,28],
+    bathroom:[24,29,33,35], bathrooms:[24,29,33,35],
+    walk_in_closet:[30,31], closet:[30,31],
+    backyard:[9,10,11,37,38], patio:[10,11,37], deck:[37],
+    view:[43,44,45,46]
+  },
+  // 218 — 11 curated gallery photos reviewed (0-based gallery index)
+  '218':   {
+    exterior:[0], front:[0], garage:[0],
+    entry:[2,7], stairs:[2],
+    living:[3,4], great_room:[3,4],
+    kitchen:[5,8,9], wet_bar:[8],
+    dining:[1,6,7],
+    backyard:[10], patio:[10], deck:[10]
+  },
   // 1224 — every gallery photo reviewed & tagged (0-based gallery index = photo number - 1)
   '1224':  {
     exterior:[0,1,2,3,4,43], front:[1,2,3], garage:[2],
