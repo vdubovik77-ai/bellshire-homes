@@ -2487,17 +2487,21 @@ body:has(#video-modal.active) #ai-overlay-close { display:flex; }
   .tour-scene-counter { font-size:.7rem; letter-spacing:.18em; text-transform:uppercase; color:#4a9e95; font-weight:700; }
   .tour-scene-title  { font-family:'Cormorant Garamond',serif; font-size:2rem; font-weight:600; line-height:1.15; }
   .tour-scene-text   { font-size:1.05rem; line-height:1.65; color:rgba(255,255,255,.88); }
-  .tour-controls { display:flex; gap:.7rem; margin-top:auto; padding-top:1rem; flex-wrap:wrap; }
+  .tour-controls { display:flex; gap:.9rem; margin-top:auto; padding-top:1rem; align-items:center; }
   .tour-ctrl-btn {
+    width:52px; height:52px; border-radius:50%;
     background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15);
-    color:#fff; padding:.7rem 1.2rem; border-radius:10px;
-    font-size:.78rem; font-weight:600; letter-spacing:.06em; cursor:pointer;
-    font-family:'Outfit',sans-serif; display:inline-flex; align-items:center; gap:.5rem;
+    color:#fff; cursor:pointer; flex:0 0 auto;
+    display:inline-flex; align-items:center; justify-content:center;
+    transition:background .2s, transform .15s, opacity .2s, border-color .2s;
   }
-  .tour-ctrl-btn:hover { background:rgba(255,255,255,.15); }
-  .tour-ctrl-btn.primary { background:#4a9e95; border-color:#4a9e95; }
+  .tour-ctrl-btn svg { width:20px; height:20px; display:block; }
+  .tour-ctrl-btn:hover:not([disabled]) { background:rgba(255,255,255,.16); }
+  .tour-ctrl-btn:active:not([disabled]) { transform:scale(.92); }
+  .tour-ctrl-btn.primary { width:62px; height:62px; background:#4a9e95; border-color:#4a9e95; }
   .tour-ctrl-btn.primary:hover { background:#3d8a82; }
-  .tour-ctrl-btn[disabled] { opacity:.35; cursor:not-allowed; }
+  .tour-ctrl-btn.primary svg { width:24px; height:24px; }
+  .tour-ctrl-btn[disabled] { opacity:.3; cursor:not-allowed; }
 
   .tour-media { grid-area:media; position:relative; border-radius:18px; overflow:hidden; background:#1a1a1a; min-height:380px; }
   .tour-media img, .tour-media video { width:100%; height:100%; object-fit:cover; display:block; }
@@ -2550,20 +2554,35 @@ body:has(#video-modal.active) #ai-overlay-close { display:flex; }
   .property-tour-btn:hover { background:var(--teal); color:#fff; }
   .property-tour-btn .pt-sparkle { font-size:.85rem; opacity:.9; }
 
-  /* When tour is open — fade out the AI consultation panel so it doesn't overlap.
-     Voice session keeps running underneath so Alexandra can narrate. */
-  body:has(.tour-overlay.open) .ai-modal-overlay { opacity:0; pointer-events:none; transition:opacity .25s; }
+  /* While the tour is open, the chat AND voice panels collapse — the voice
+     session keeps running underneath so Alexandra can narrate; she appears
+     only as the compact avatar below. Panels reappear when the tour closes. */
+  body:has(.tour-overlay.open) .ai-modal-overlay,
+  body:has(.tour-overlay.open) .ai-voice-overlay { opacity:0 !important; pointer-events:none !important; transition:opacity .25s; }
   body:has(.tour-overlay.open) .ai-float-btn { opacity:0; pointer-events:none; }
-  .tour-voice-indicator {
-    position:fixed; top:1rem; right:1rem; z-index:10001;
-    display:none; align-items:center; gap:.6rem;
+
+  /* Compact Alexandra avatar shown on the tour while she narrates */
+  .tour-avatar {
+    position:fixed; right:1.6rem; bottom:1.6rem; z-index:10003;
+    display:none; flex-direction:column; align-items:center; gap:.5rem;
+  }
+  .tour-avatar.live { display:flex; animation:tourAvatarIn .4s ease; }
+  @keyframes tourAvatarIn { from{opacity:0;transform:translateY(14px) scale(.9)} to{opacity:1;transform:none} }
+  .tour-avatar-ring {
+    width:84px; height:84px; border-radius:50%; overflow:hidden;
+    border:2px solid rgba(74,158,149,.55); box-shadow:0 10px 30px rgba(0,0,0,.5);
+  }
+  .tour-avatar.speaking .tour-avatar-ring { border-color:#4a9e95; animation:tourAvatarPulse 1.5s infinite; }
+  @keyframes tourAvatarPulse { 0%{box-shadow:0 0 0 0 rgba(74,158,149,.55)} 70%{box-shadow:0 0 0 16px rgba(74,158,149,0)} 100%{box-shadow:0 0 0 0 rgba(74,158,149,0)} }
+  .tour-avatar-ring img { width:100%; height:100%; object-fit:cover; }
+  .tour-avatar-label {
+    display:inline-flex; align-items:center; gap:.4rem;
     background:rgba(15,22,26,.92); border:1px solid rgba(74,158,149,.4);
-    color:#fff; padding:.55rem .9rem; border-radius:999px;
-    font-family:'Outfit',sans-serif; font-size:.72rem; letter-spacing:.08em; text-transform:uppercase;
+    color:#fff; padding:.34rem .75rem; border-radius:999px;
+    font-family:'Outfit',sans-serif; font-size:.62rem; letter-spacing:.1em; text-transform:uppercase;
     backdrop-filter:blur(10px);
   }
-  .tour-voice-indicator.live { display:inline-flex; }
-  .tour-voice-indicator .tvi-dot { width:8px; height:8px; border-radius:50%; background:#4a9e95; animation:pulse 1.6s infinite; }
+  .tour-avatar-label .tvi-dot { width:7px; height:7px; border-radius:50%; background:#4a9e95; animation:pulse 1.6s infinite; }
 </style>
 </head>
 <body>
@@ -5998,6 +6017,12 @@ async function aiRealtimeOpenSession(stream) {
                 },
                 required: ['property_id']
               }
+            },
+            {
+              type: 'function',
+              name: 'close_property_tour',
+              description: 'Closes the Guided Property Tour player and returns to the normal consultation. Call this when the user says they have seen enough, says "that\'s enough", "stop the tour", "close the tour", "досить", "вистачить", "заверши тур", or asks to go back / move on. After closing, continue the conversation normally.',
+              parameters: { type: 'object', properties: {}, required: [] }
             }
           ]
         }
@@ -6667,6 +6692,12 @@ function aiExecuteAction(name, args) {
     return { ok: false, reason: 'tour player unavailable' };
   }
 
+  if (name === 'close_property_tour') {
+    var tourOpen = document.getElementById('tour-overlay') && document.getElementById('tour-overlay').classList.contains('open');
+    if (tourOpen && typeof closeTour === 'function') { closeTour({ keepResponse: true }); return { ok: true, closed: true }; }
+    return { ok: true, closed: false, note: 'no tour was open' };
+  }
+
   if (name === 'play_video') {
     var mv = AI_PROPERTY_MEDIA[args.property_id];
     if (mv && mv.video) {
@@ -7172,9 +7203,15 @@ function aiVpScrollTo(propId) {
       <div class="tour-scene-title" id="tour-scene-title">Loading…</div>
       <div class="tour-scene-text" id="tour-scene-text"></div>
       <div class="tour-controls">
-        <button class="tour-ctrl-btn" id="tour-prev" onclick="tourPrev()">◀ Previous</button>
-        <button class="tour-ctrl-btn primary" id="tour-narrate" onclick="tourToggleNarrate()">🔊 Auto-narrate</button>
-        <button class="tour-ctrl-btn" id="tour-next" onclick="tourNext()">Next ▶</button>
+        <button class="tour-ctrl-btn" id="tour-prev" onclick="tourPrev()" title="Previous scene" aria-label="Previous scene">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button class="tour-ctrl-btn primary" id="tour-narrate" onclick="tourToggleNarrate()" title="Play narration" aria-label="Play narration">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <button class="tour-ctrl-btn" id="tour-next" onclick="tourNext()" title="Next scene" aria-label="Next scene">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
       </div>
     </div>
     <div class="tour-media" id="tour-media">
@@ -7182,8 +7219,12 @@ function aiVpScrollTo(propId) {
     </div>
     <div class="tour-map" id="tour-map"></div>
   </div>
-  <div class="tour-voice-indicator" id="tour-voice-indicator">
-    <span class="tvi-dot"></span>Alexandra is narrating
+  <div class="tour-avatar" id="tour-avatar">
+    <div class="tour-avatar-ring">
+      <img src="images/alexandra.png" alt="Alexandra"
+           onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1580489944761-15a19d654956?w=180&h=180&fit=crop&crop=face'">
+    </div>
+    <div class="tour-avatar-label"><span class="tvi-dot"></span>Alexandra</div>
   </div>
 </div>
 
@@ -7193,7 +7234,30 @@ function aiVpScrollTo(propId) {
 // ═══════════════════════════════════════════
 var TOUR = { propertyId:null, mode:'pitch', data:null, idx:0, autoNarrate:false,
              map:null, markers:[], pendingAlexandra:false, voiceAutoOpened:false,
-             responseActive:false, sceneToken:0 };
+             responseActive:false, sceneToken:0, restorePopup:null };
+
+// ── Control icons ──────────────────────────────────────
+var TOUR_ICON_PLAY  = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+var TOUR_ICON_PAUSE = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>';
+function tourSetNarrateBtn(playing) {
+  var btn = document.getElementById('tour-narrate');
+  if (!btn) return;
+  btn.innerHTML = playing ? TOUR_ICON_PAUSE : TOUR_ICON_PLAY;
+  btn.title = playing ? 'Pause narration' : 'Play narration';
+  btn.setAttribute('aria-label', btn.title);
+  btn.classList.add('primary');
+}
+// ── Floating Alexandra avatar on the tour ──────────────
+function tourShowAvatar(live) {
+  var el = document.getElementById('tour-avatar');
+  if (!el) return;
+  el.classList.toggle('live', !!live);
+  if (!live) el.classList.remove('speaking');
+}
+function tourAvatarSpeaking(on) {
+  var el = document.getElementById('tour-avatar');
+  if (el && el.classList.contains('live')) el.classList.toggle('speaking', !!on);
+}
 
 async function openTour(propertyId, mode) {
   event && event.stopPropagation && event.stopPropagation();
@@ -7202,10 +7266,19 @@ async function openTour(propertyId, mode) {
   TOUR.mode = mode;
   document.getElementById('tour-mode-pitch').classList.toggle('active', mode === 'pitch');
   document.getElementById('tour-mode-tour').classList.toggle('active', mode === 'tour');
+  // Remember if a consultation panel was visibly open — to restore it on close
+  // (only on a FRESH open, not when switching pitch↔tour which re-calls openTour).
+  if (!document.getElementById('tour-overlay').classList.contains('open')) {
+    var voiceOpen = document.getElementById('ai-voice-overlay') && document.getElementById('ai-voice-overlay').classList.contains('open');
+    var chatOpen  = document.getElementById('ai-modal-overlay') && document.getElementById('ai-modal-overlay').classList.contains('open');
+    TOUR.restorePopup = voiceOpen ? 'voice' : (chatOpen ? 'chat' : null);
+  }
   document.getElementById('tour-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
   TOUR.idx = 0;
   TOUR.autoNarrate = false;
+  tourSetNarrateBtn(false);
+  tourShowAvatar(false);
   document.getElementById('tour-scene-title').textContent = 'Loading…';
   document.getElementById('tour-scene-text').textContent = '';
   try {
@@ -7223,21 +7296,30 @@ async function openTour(propertyId, mode) {
   }
 }
 
-function closeTour() {
+function closeTour(opts) {
+  var keepResponse = opts && opts.keepResponse;  // true when Alexandra closes it herself (let her finish speaking)
   document.getElementById('tour-overlay').classList.remove('open');
   document.body.style.overflow = '';
   TOUR.autoNarrate = false;
   TOUR.sceneToken++; // invalidate any in-flight narration
-  var ind = document.getElementById('tour-voice-indicator');
-  if (ind) ind.classList.remove('live');
+  tourSetNarrateBtn(false);
+  tourShowAvatar(false);
   if (window.speechSynthesis) window.speechSynthesis.cancel();
-  // If we auto-opened Alexandra for this tour, cancel any active response so she goes quiet
-  if (TOUR.voiceAutoOpened && typeof AI_RT !== 'undefined' && AI_RT && AI_RT.dc && AI_RT.dc.readyState === 'open') {
+  // Stop in-flight narration — unless Alexandra is mid-acknowledgement as she closes it
+  if (!keepResponse && typeof AI_RT !== 'undefined' && AI_RT && AI_RT.dc && AI_RT.dc.readyState === 'open' && TOUR.responseActive) {
     try { AI_RT.dc.send(JSON.stringify({ type: 'response.cancel' })); } catch(e){}
+    TOUR.responseActive = false;
   }
-  TOUR.voiceAutoOpened = false;
   var v = document.querySelector('#tour-media video');
   if (v) try { v.pause(); } catch(e){}
+  // Standalone tour where we silently started voice just to narrate → fully close it
+  // so the popup doesn't pop up. Tour opened FROM a popup → leave session running; the
+  // CSS that hid the panel stops matching, so the popup simply reappears.
+  if (TOUR.voiceAutoOpened && !TOUR.restorePopup) {
+    if (typeof aiCloseVoiceMode === 'function') { try { aiCloseVoiceMode(); } catch(e){} }
+  }
+  TOUR.voiceAutoOpened = false;
+  TOUR.restorePopup = null;
 }
 
 function tourSetMode(mode) {
@@ -7282,17 +7364,14 @@ function tourNext() { tourShowScene(TOUR.idx + 1); }
 
 function tourToggleNarrate() {
   TOUR.autoNarrate = !TOUR.autoNarrate;
-  var btn = document.getElementById('tour-narrate');
-  btn.textContent = TOUR.autoNarrate ? '⏸ Pause narration' : '🔊 Auto-narrate';
-  btn.classList.toggle('primary', TOUR.autoNarrate);
+  tourSetNarrateBtn(TOUR.autoNarrate);
   if (!TOUR.autoNarrate) {
     TOUR.sceneToken++; // stop in-flight chunks
     if (window.speechSynthesis) window.speechSynthesis.cancel();
     if (typeof AI_RT !== 'undefined' && AI_RT && AI_RT.dc && AI_RT.dc.readyState === 'open' && TOUR.responseActive) {
       try { AI_RT.dc.send(JSON.stringify({ type: 'response.cancel' })); } catch(e){}
     }
-    var ind = document.getElementById('tour-voice-indicator');
-    if (ind) ind.classList.remove('live');
+    tourAvatarSpeaking(false);
     return;
   }
   // If Alexandra isn't connected yet, auto-open her in the background
@@ -7352,8 +7431,8 @@ function tourAlexandraAvailable() {
 
 function tourSpeakViaAlexandra(text) {
   if (!tourAlexandraAvailable()) return false;
-  var ind = document.getElementById('tour-voice-indicator');
-  if (ind) ind.classList.add('live');
+  tourShowAvatar(true);
+  tourAvatarSpeaking(true);
   var myToken = ++TOUR.sceneToken;
   // If a prior response is mid-flight (greeting or previous scene), cancel it first
   function send() {
@@ -7381,13 +7460,12 @@ function tourSpeakViaAlexandra(text) {
         AI_RT.dc.removeEventListener('message', onMsg);
         TOUR.responseActive = false;
         if (myToken !== TOUR.sceneToken) return; // a newer scene took over
+        tourAvatarSpeaking(false);
         if (TOUR.autoNarrate && TOUR.idx < TOUR.data.scenes.length - 1) {
           setTimeout(function(){ if (TOUR.autoNarrate && myToken === TOUR.sceneToken - 0) tourNext(); }, 900);
         } else if (TOUR.autoNarrate) {
           TOUR.autoNarrate = false;
-          var btn = document.getElementById('tour-narrate');
-          if (btn) { btn.textContent = '🔊 Auto-narrate'; btn.classList.add('primary'); }
-          if (ind) ind.classList.remove('live');
+          tourSetNarrateBtn(false);
         }
       }
     } catch(_) {}
@@ -7411,8 +7489,7 @@ function tourSpeak(text) {
         setTimeout(function(){ if (TOUR.autoNarrate && myToken === TOUR.sceneToken) tourNext(); }, 900);
       } else if (TOUR.autoNarrate) {
         TOUR.autoNarrate = false;
-        var btn = document.getElementById('tour-narrate');
-        if (btn) { btn.textContent = '🔊 Auto-narrate'; btn.classList.add('primary'); }
+        tourSetNarrateBtn(false);
       }
       return;
     }
