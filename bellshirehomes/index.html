@@ -2767,6 +2767,9 @@ body:has(#video-modal.active) #ai-overlay-close { display:flex; }
   .tour-map { grid-area:map; border-radius:18px; overflow:hidden; height:280px; background:#0f1416; }
   .tour-map .leaflet-container { background:#0f1416; cursor:grab; }
   .tour-map .leaflet-container:active { cursor:grabbing; }
+  /* Let the marker label pill size to its content (Leaflet's divIcon defaults to a
+     12×12 box, which was clipping the address text — making it unreadable). */
+  .tour-map .leaflet-marker-icon { width:auto !important; height:auto !important; background:transparent !important; border:0 !important; }
   .tour-marker-pin {
     display:inline-flex; align-items:center; gap:.34rem;
     background:#C9A96E; color:#15202a; padding:.36rem .62rem; border-radius:9px;
@@ -8544,9 +8547,11 @@ function tourUpdateMap(mapData) {
     var ic = TOUR_MK_ICON[kind] || '📍';
     // Highlight everything Alexandra is pointing out this scene (the non-home markers)
     var hl = (kind !== 'home') ? ' hl' : '';
+    // Keep the home label short (street only) so the pill stays compact and readable
+    var label = (kind === 'home') ? String(mk.label).split(',')[0] : mk.label;
     var icon = L.divIcon({
       className: '',
-      html: '<div class="tour-marker-pin ' + kind + hl + '"><span class="mk-ic">' + ic + '</span>' + mk.label + '</div>',
+      html: '<div class="tour-marker-pin ' + kind + hl + '"><span class="mk-ic">' + ic + '</span>' + label + '</div>',
       iconAnchor: [12, 0]
     });
     var marker = L.marker([mk.lat, mk.lng], { icon: icon, riseOnHover: true }).addTo(TOUR.map);
