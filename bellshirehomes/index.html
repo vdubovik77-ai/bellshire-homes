@@ -2256,10 +2256,8 @@ body:has(.ai-voice-overlay.open) .ai-float-btn { display: none !important; }
 .ai-voice-end-btn:hover { background:rgba(224,82,82,.18); border-color:rgba(224,82,82,.38); color:#e05252; }
 
 /* Voice selector */
-.ai-voice-selector {
-  display:flex; flex-wrap:wrap; gap:.4rem; justify-content:center;
-  max-width:320px;
-}
+/* Voice is fixed to Sage — selector hidden on all screens (frees space for cards/text) */
+.ai-voice-selector { display:none !important; }
 .ai-voice-btn {
   background:transparent; border:1.5px solid rgba(255,255,255,.15);
   color:rgba(255,255,255,.45); font-family:'Outfit',sans-serif;
@@ -2273,12 +2271,8 @@ body:has(.ai-voice-overlay.open) .ai-float-btn { display: none !important; }
   color:#fff; font-weight:600;
 }
 .ai-voice-btn:hover:not(.active) { background:rgba(255,255,255,.06); color:rgba(255,255,255,.7); }
-/* Voice description line */
-.ai-voice-desc {
-  text-align:center; font-family:'Outfit',sans-serif;
-  font-size:.68rem; color:rgba(255,255,255,.32);
-  letter-spacing:.03em;
-}
+/* Voice description line — hidden (voice fixed to Sage) */
+.ai-voice-desc { display:none !important; }
 
 /* Language toggle row */
 .ai-voice-lang-row { display:flex; gap:.4rem; justify-content:center; margin-bottom:.7rem; }
