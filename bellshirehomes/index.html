@@ -6515,7 +6515,7 @@ async function aiRealtimeOpenSession(stream) {
                 type: 'object',
                 properties: {
                   property_id: { type: 'string', enum: ['10425','312','218','1224','1071','1305','4920'] },
-                  category: { type: 'string', description: 'Room/area: exterior, kitchen, master, bedroom, bathroom, living, dining, backyard, garage, view, basement, office' }
+                  category: { type: 'string', description: 'Room/area, e.g.: exterior, front, entry, office/study, living, family, kitchen, dining, pantry, wine_cellar, stairs, guest_bath, bedroom, master, master_bath, bathroom, walk_in_closet, laundry, lower_level/basement, wet_bar, backyard/patio, view, garage' }
                 },
                 required: ['property_id','category']
               }
@@ -7200,7 +7200,30 @@ var PROPERTY_PHOTO_TAGS = {
   // Tagged by visual review of each gallery (0-based indices).
   '312':   { exterior:[0,1,2,36,40,41], kitchen:[12,14,15,16,17], master:[25], bedroom:[23,25,26,32,34], bathroom:[19,24,27,28,33,35], living:[4,5,6,7,8,21,22], dining:[13,18,47], backyard:[9,10,11,37,38,39], view:[42,43,44,45,46] },
   '218':   { exterior:[0], living:[3,4], kitchen:[5,9], dining:[1,6,7], backyard:[10] },
-  '1224':  { exterior:[0,1,2,3,4,5,43], living:[6,15,16,49,54,58], kitchen:[17,18,19,20,22,23,50,56,57,60,61], dining:[8,9,45,62,66], master:[32,33], bedroom:[24,26,29,38], bathroom:[25,27,28,30,34,35,36,37,39,40,48,67,69] },
+  // 1224 — every gallery photo reviewed & tagged (0-based gallery index = photo number - 1)
+  '1224':  {
+    exterior:[0,1,2,3,4,43], front:[1,2,3], garage:[2],
+    entry:[5,8,13,14,43], foyer:[8,13,14],
+    office:[9], study:[9],
+    living:[6,7,15,16], great_room:[6,7,16],
+    family:[44,54,58], family_room:[44,54,58],
+    dining:[10,45],
+    kitchen:[17,18,19,20,22,23,50,57,60,61],
+    pantry:[21,53],
+    wine_cellar:[12,63], wine:[12,63],
+    stairs:[31,49,62,64,65], staircase:[31,49,62,64,65],
+    guest_bath:[11], powder:[11], half_bath:[11],
+    bedroom:[24,29,38], guest_bedroom:[24],
+    master:[26,32,33], master_bedroom:[26,32,33],
+    master_bath:[34,35,36,47,67,69], master_bathroom:[34,35,36,47,67,69],
+    bathroom:[25,27,28,30,37,39,40,48,52], bathrooms:[25,27,28,30,37,39,40,48,52],
+    closet:[42], walk_in_closet:[42],
+    laundry:[41,46],
+    basement:[49,51,54,55,56,58,59,66], lower_level:[49,51,54,55,56,58,59,66],
+    wet_bar:[55,59], second_kitchen:[55,56],
+    backyard:[44,58], patio:[44,58], deck:[44,58],
+    view:[9,36]
+  },
   '1071':  { exterior:[0], living:[2,4,8], kitchen:[5,6], dining:[7], master:[9], bedroom:[9], bathroom:[10,11] },
   '1305':  { exterior:[0,14], living:[2,3], kitchen:[4,6], dining:[5], master:[9], bedroom:[9,12,15], bathroom:[10] },
   '4920':  { exterior:[0,27,31], living:[3,4,5,7,37], kitchen:[9,10,11,13,15], dining:[10,16], master:[21], bedroom:[19,21,28,29,34], bathroom:[18,20,23,24,26,30,35], backyard:[22,31,32], view:[32,36] },
