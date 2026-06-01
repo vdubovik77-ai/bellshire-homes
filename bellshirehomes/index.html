@@ -2538,16 +2538,17 @@ body:has(#video-modal.active) #ai-overlay-close { display:flex; }
 
   .property-tour-btn {
     width:100%; margin-top:.9rem;
-    background:linear-gradient(135deg, rgba(74,158,149,.16), rgba(74,158,149,.04));
-    border:1px solid rgba(74,158,149,.45); color:#4a9e95;
+    background:transparent;
+    border:1px solid var(--teal); color:var(--teal);
     padding:.85rem 1rem; border-radius:10px;
-    font-family:'Cormorant Garamond','Cormorant',serif;
-    font-style:italic; font-size:1.2rem; font-weight:500; letter-spacing:.02em;
+    font-family:'Outfit',sans-serif;
+    font-style:normal; font-weight:400; font-size:.75rem;
+    letter-spacing:.15em; text-transform:uppercase;
     cursor:pointer; display:flex; align-items:center; justify-content:center; gap:.55rem;
-    transition:background .25s, color .25s, transform .2s;
+    transition:all .3s ease;
   }
-  .property-tour-btn:hover { background:#4a9e95; color:#fff; transform:translateY(-1px); }
-  .property-tour-btn .pt-sparkle { font-style:normal; font-size:.95rem; opacity:.9; }
+  .property-tour-btn:hover { background:var(--teal); color:#fff; }
+  .property-tour-btn .pt-sparkle { font-size:.85rem; opacity:.9; }
 
   /* When tour is open — fade out the AI consultation panel so it doesn't overlap.
      Voice session keeps running underneath so Alexandra can narrate. */
