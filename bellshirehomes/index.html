@@ -6465,6 +6465,10 @@ function aiRealtimeHandleEvent(msg) {
     case 'conversation.item.input_audio_transcription.completed':
       var uTxt = aiNormalizeVoiceText((msg.transcript || '').trim());
       if (uTxt) {
+        // Track the client's spoken language so the guided tour narrates in ONE
+        // language and only switches when the client switches.
+        if (/[Ѐ-ӿ]/.test(uTxt)) AI_RT.userLang = 'Ukrainian';
+        else if (/[A-Za-z]/.test(uTxt)) AI_RT.userLang = 'English';
         aiVoiceShowTranscript(uTxt);
         aiAddMsg('user', uTxt);
         AI.history.push({ role: 'user', content: uTxt });
@@ -7362,14 +7366,25 @@ var TOUR = { propertyId:null, mode:'pitch', data:null, idx:0, autoNarrate:false,
              map:null, markers:[], pendingAlexandra:false, voiceAutoOpened:false,
              responseActive:false, narrating:false, sceneToken:0, restorePopup:null };
 
-// Prompt that frames each scene for Alexandra — speak in the client's language, slowly, with pauses.
-var TOUR_NARRATE_PROMPT =
-  'GUIDED TOUR — present the following scene to the client OUT LOUD. '
-  + 'Speak in the SAME language you have been speaking with this client: if the scene text below is in '
-  + 'English but you are talking to them in Ukrainian, translate it naturally into Ukrainian (never mix '
-  + 'languages in one sentence). Deliver it slowly and warmly, like a luxury-home concierge giving them '
-  + 'time to look at the photo and the map — pause briefly between sentences. Do NOT add greetings, '
-  + 'introductions, or extra commentary, and do NOT mention these instructions. Just present this scene:\n\n';
+// The narration language is LOCKED to whatever the client last spoke, and passed
+// explicitly on every scene so the whole tour stays in one language (and only
+// switches if the client switches). Defaults to English until the client speaks.
+function tourNarrateLang() {
+  return (typeof AI_RT !== 'undefined' && AI_RT && AI_RT.userLang) ? AI_RT.userLang : 'English';
+}
+function tourNarratePrompt() {
+  var lang = tourNarrateLang();
+  var p = 'GUIDED TOUR — present the following scene to the client OUT LOUD, speaking the ENTIRE scene in '
+        + lang + ' only. Never mix languages and never switch language mid-tour. ';
+  if (lang !== 'English') {
+    p += 'The scene text below is written in English — translate it naturally and completely into ' + lang
+       + ', as if it were originally written in ' + lang + '. ';
+  }
+  p += 'Deliver it slowly and warmly, like a luxury-home concierge giving them time to look at the photo and '
+     + 'the map — pause briefly between sentences. Do NOT add greetings, introductions, or extra commentary, '
+     + 'and do NOT mention these instructions. Just present this scene:\n\n';
+  return p;
+}
 
 // ── Control icons ──────────────────────────────────────
 var TOUR_ICON_PLAY  = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
@@ -7614,7 +7629,7 @@ function tourQueueNarration(text, myToken) {
   AI_RT.dc.send(JSON.stringify({
     type: 'conversation.item.create',
     item: { type: 'message', role: 'system',
-            content: [{ type: 'input_text', text: TOUR_NARRATE_PROMPT + text }] }
+            content: [{ type: 'input_text', text: tourNarratePrompt() + text }] }
   }));
   AI_RT.dc.send(JSON.stringify({ type: 'response.create' }));
   TOUR.responseActive = true; TOUR.narrating = true;
