@@ -1951,23 +1951,27 @@
   }
 
 /* ── AI Consult Modal ─────────────────────────── */
+/* ── Chat = right side panel; page stays visible for navigation ── */
 .ai-modal-overlay {
-  display: none; position: fixed; inset: 0; z-index: 9999;
-  background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
-  align-items: center; justify-content: center; padding: 1rem;
+  display: none; position: fixed; top:0; right:0; bottom:0;
+  width: min(420px, 100vw); z-index: 9999;
+  background: transparent; pointer-events: none;
 }
-.ai-modal-overlay.open { display: flex; animation: aiModalIn 0.35s ease; }
-@keyframes aiModalIn { from{opacity:0;transform:scale(0.96)} to{opacity:1;transform:scale(1)} }
+.ai-modal-overlay.open { display: block; }
+.ai-modal-overlay.open .ai-modal { animation: aiModalIn 0.4s cubic-bezier(.4,0,.2,1); }
+@keyframes aiModalIn { from{opacity:0;transform:translateX(100%)} to{opacity:1;transform:translateX(0)} }
 
 .ai-modal {
-  background: #0d0d0d; border-radius: 16px;
-  width: 100%; max-width: 980px; height: 88vh; max-height: 720px;
-  display: grid; grid-template-columns: 1fr 380px;
-  grid-template-rows: auto 1fr;
+  pointer-events: all;
+  background: #0d0d0d; border-radius: 20px 0 0 20px;
+  width: 100%; height: 100%; max-width: none; max-height: none;
+  display: flex; flex-direction: column;
   overflow: hidden; position: relative;
-  border: 1px solid rgba(255,255,255,0.08);
-  box-shadow: 0 40px 100px rgba(0,0,0,0.7);
+  border: 1px solid rgba(255,255,255,0.08); border-right: none;
+  box-shadow: -12px 0 60px rgba(0,0,0,0.6);
 }
+/* Consultation profile hidden in side-panel mode — main screen shows the site */
+.ai-modal .ai-right { display: none !important; }
 .ai-modal-header {
   grid-column: 1 / -1;
   display: flex; align-items: center; justify-content: space-between;
@@ -2001,11 +2005,11 @@
 .ai-modal-overlay.open .ai-modal-close { display: flex; }
 .ai-modal-close:hover { background: #4a9e95; color:#fff; transform: scale(1.1); }
 
-/* Left chat panel */
+/* Left chat panel — fills the side panel */
 .ai-left {
   display: flex; flex-direction: column;
-  border-right: 1px solid rgba(255,255,255,0.07);
-  overflow: hidden; grid-row: 2;
+  border-right: none;
+  overflow: hidden; flex: 1; min-height: 0;
 }
 .ai-right { grid-row: 2; }
 .ai-avatar-bar {
@@ -2107,7 +2111,7 @@
 
 /* Setup screen inside modal */
 .ai-setup {
-  grid-column: 1 / -1; grid-row: 2; display:flex; align-items:flex-start; justify-content:center;
+  flex: 1; min-height: 0; display:flex; align-items:flex-start; justify-content:center;
   padding:2rem; background:#0d0d0d; overflow-y:auto;
 }
 .ai-setup::-webkit-scrollbar { width:4px; }
@@ -2160,6 +2164,10 @@
 }
 .ai-float-btn.visible:hover { transform:translateY(-3px) scale(1.03); box-shadow:0 14px 40px rgba(74,158,149,.55); background:#3d8a82; }
 @keyframes floatPulse { 0%,100%{box-shadow:0 8px 30px rgba(74,158,149,.4)} 50%{box-shadow:0 8px 40px rgba(74,158,149,.65)} }
+/* Hide the floating button whenever the chat OR voice panel is open
+   (it would otherwise overlap the panel's input field) — all screen sizes */
+body:has(.ai-modal-overlay.open) .ai-float-btn,
+body:has(.ai-voice-overlay.open) .ai-float-btn { display: none !important; }
 .ai-float-dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,.9); animation:pulse 2s infinite; }
 
 /* Success overlay inside modal */
@@ -2179,25 +2187,23 @@
 .ai-success-close:hover { background:#3d8a82; }
 
 @media (max-width:768px) {
-  /* AI modal: full-screen on mobile, chat-only (form panel hidden) */
+  /* AI chat: bottom sheet on mobile, page stays visible above */
   .ai-modal-overlay {
-    padding: 0 !important;
-    /* Dynamic viewport height — shrinks when iOS keyboard opens */
-    height: 100vh !important;
-    height: 100dvh !important;
+    top: auto !important; bottom: 0 !important; left: 0 !important; right: 0 !important;
+    width: 100% !important;
+    height: auto !important;
   }
   .ai-modal {
-    grid-template-columns: 1fr !important;
-    grid-template-rows: auto 1fr !important;
-    max-width: 100vw !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    height: 100dvh !important;
-    max-height: 100vh !important;
-    max-height: 100dvh !important;
-    border-radius: 0 !important;
-    border: none !important;
+    width: 100% !important;
+    height: min(88dvh, 88vh) !important;
+    max-width: none !important; max-height: none !important;
+    border-radius: 22px 22px 0 0 !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    border-bottom: none !important;
+    box-shadow: 0 -10px 60px rgba(0,0,0,0.6) !important;
   }
+  .ai-modal-overlay.open .ai-modal { animation: aiSheetIn 0.4s cubic-bezier(.4,0,.2,1) !important; }
+  @keyframes aiSheetIn { from{transform:translateY(100%)} to{transform:translateY(0)} }
   /* Honor iOS safe-area at the bottom (home indicator) */
   .ai-input-bar {
     padding-bottom: max(.7rem, env(safe-area-inset-bottom)) !important;
@@ -2262,27 +2268,49 @@
 /* ══════════════════════════════════════
    VOICE MODE POPUP
 ══════════════════════════════════════ */
+/* ── Right side panel — page stays visible ── */
 .ai-voice-overlay {
-  position:fixed; inset:0; z-index:10001;
-  background:rgba(0,0,0,.88);
-  backdrop-filter:blur(22px) saturate(.5);
-  display:flex; align-items:center; justify-content:center;
+  position:fixed; top:0; right:0;
+  height:100%; width:min(420px,100vw);
+  z-index:10001;
   opacity:0; pointer-events:none;
-  transition:opacity .35s cubic-bezier(.4,0,.2,1);
+  transition:opacity .3s, transform .38s cubic-bezier(.4,0,.2,1);
+  transform:translateX(100%);
 }
-.ai-voice-overlay.open { opacity:1; pointer-events:all; }
+.ai-voice-overlay.open {
+  opacity:1; pointer-events:all;
+  transform:translateX(0);
+}
 
 .ai-voice-modal {
-  width:min(500px,94vw);
-  height:min(720px,94vh);
+  width:100%; height:100%;
   overflow:hidden;
   background:linear-gradient(165deg,#081614 0%,#0e1d1b 55%,#131313 100%);
-  border:1px solid rgba(255,255,255,.07);
-  border-radius:28px;
-  padding:1.4rem 2rem 1.4rem;
-  display:flex; flex-direction:column; align-items:center; gap:.7rem;
-  box-shadow:0 40px 90px rgba(0,0,0,.7), 0 0 0 1px rgba(74,158,149,.06);
+  border:1px solid rgba(255,255,255,.08);
+  border-right:none;
+  border-radius:24px 0 0 24px;
+  padding:1.4rem 1.6rem 1.2rem;
+  display:flex; flex-direction:column; align-items:center; gap:.65rem;
+  box-shadow:-10px 0 60px rgba(0,0,0,.65), inset 1px 0 0 rgba(74,158,149,.07);
   position:relative;
+}
+
+/* Mobile: bottom sheet */
+@media (max-width:600px) {
+  .ai-voice-overlay {
+    top:auto; bottom:0; left:0; right:0;
+    width:100%; height:auto;
+    transform:translateY(100%);
+  }
+  .ai-voice-overlay.open { transform:translateY(0); }
+  .ai-voice-modal {
+    width:100%; height:min(88dvh,88vh);
+    border-radius:22px 22px 0 0;
+    border:1px solid rgba(255,255,255,.08);
+    border-bottom:none;
+    box-shadow:0 -10px 60px rgba(0,0,0,.65);
+    padding:1.2rem 1.4rem 1rem;
+  }
 }
 
 .ai-voice-close-btn {
@@ -2362,8 +2390,46 @@
 
 /* When meeting card is shown, align content to top so the card has room */
 .ai-voice-content:has(#ai-voice-meeting[style*="display: block"]),
-.ai-voice-content:has(#ai-voice-meeting:not([style*="display: none"])) {
+.ai-voice-content:has(#ai-voice-meeting:not([style*="display: none"])),
+.ai-voice-content:has(#ai-voice-property[style*="display: block"]),
+.ai-voice-content:has(#ai-voice-property:not([style*="display: none"])),
+.ai-voice-content:has(#ai-voice-info[style*="display: block"]),
+.ai-voice-content:has(#ai-voice-feed > *) {
   justify-content: flex-start;
+}
+
+/* Scrollable history feed (dialog bubbles + cards accumulate) */
+.ai-voice-feed { width:100%; display:flex; flex-direction:column; gap:.5rem; }
+.ai-voice-feed:empty { display:none; }
+.ai-fd-msg {
+  max-width:88%; padding:.5rem .75rem; border-radius:13px;
+  font-family:'General Sans','Inter',sans-serif; font-size:.8rem; line-height:1.5;
+  white-space:pre-wrap; word-break:break-word;
+}
+.ai-fd-ai   { align-self:flex-start; background:rgba(255,255,255,.06); color:rgba(255,255,255,.9); border:1px solid rgba(255,255,255,.08); border-bottom-left-radius:4px; }
+.ai-fd-user { align-self:flex-end;  background:rgba(74,158,149,.22); color:#fff; border:1px solid rgba(74,158,149,.35); border-bottom-right-radius:4px; }
+.ai-fd-card { width:100%; box-sizing:border-box; animation: vpSlideIn .3s ease; }
+
+/* Info card (neighborhood / pricing) in the side panel */
+#ai-voice-info {
+  width:100%; box-sizing:border-box; flex-shrink:0; margin:.4rem 0;
+  border:1.5px solid rgba(74,158,149,.35); border-radius:14px;
+  background:rgba(255,255,255,.04); padding:.85rem 1rem;
+  animation: vpSlideIn .3s ease;
+}
+.ai-vp-info-title {
+  font-family:'General Sans','Outfit',sans-serif; font-size:.66rem; letter-spacing:.16em;
+  text-transform:uppercase; color:#4a9e95; font-weight:700; margin-bottom:.6rem; text-align:center;
+}
+.ai-vp-info-row { margin-bottom:.55rem; }
+.ai-vp-info-row:last-child { margin-bottom:0; }
+.ai-vp-info-row span {
+  display:block; font-family:'General Sans','Outfit',sans-serif; font-size:.68rem; font-weight:600;
+  color:rgba(255,255,255,.9); margin-bottom:.15rem;
+}
+.ai-vp-info-row p {
+  margin:0; font-family:'General Sans','Outfit',sans-serif; font-size:.74rem; line-height:1.5;
+  color:rgba(255,255,255,.6);
 }
 
 /* Meeting card — always full width, never shrinks, comfortable padding */
@@ -2473,6 +2539,137 @@
   transition:background .2s;
 }
 .ai-voice-send-btn:hover { background:rgba(74,158,149,.4); }
+
+/* AI Voice — property card shown via show_property tool call */
+#ai-voice-property {
+  display:none; margin:.4rem 0; border-radius:14px; overflow:hidden;
+  border:1.5px solid rgba(74,158,149,.35); background:rgba(255,255,255,.04);
+  width:100%; box-sizing:border-box; flex-shrink:0;
+  animation: vpSlideIn .3s ease;
+}
+@keyframes vpSlideIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+.ai-vp-img-wrap {
+  position:relative; width:100%; aspect-ratio:16/9;
+  background:#111; overflow:hidden;
+}
+.ai-vp-img-wrap img { width:100%; height:100%; object-fit:cover; display:block; }
+.ai-vp-badge {
+  position:absolute; top:.5rem; left:.6rem;
+  font-size:.6rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  padding:.18rem .55rem; border-radius:20px; font-family:'General Sans','Outfit',sans-serif;
+}
+.ai-vp-badge.for-sale { background:#4a9e95; color:#fff; }
+.ai-vp-badge.presale  { background:#c8a546; color:#1a1a1a; }
+.ai-vp-badge.pending  { background:rgba(255,255,255,.18); color:#fff; }
+.ai-vp-badge.sold     { background:rgba(255,255,255,.1); color:rgba(255,255,255,.55); }
+.ai-vp-img-counter {
+  position:absolute; bottom:.5rem; left:.6rem;
+  font-size:.6rem; color:rgba(255,255,255,.6); font-family:'General Sans','Outfit',sans-serif;
+  background:rgba(0,0,0,.45); padding:.15rem .4rem; border-radius:20px;
+}
+.ai-vp-img-nav {
+  position:absolute; bottom:.45rem; right:.5rem; display:flex; gap:.3rem;
+}
+.ai-vp-nav-btn {
+  width:26px; height:26px; border-radius:50%; background:rgba(0,0,0,.55);
+  border:1px solid rgba(255,255,255,.2); color:#fff; font-size:.7rem;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition:background .15s; line-height:1;
+}
+.ai-vp-nav-btn:hover { background:rgba(74,158,149,.75); border-color:#4a9e95; }
+.ai-vp-body { padding:.65rem .85rem .75rem; }
+.ai-vp-address {
+  font-family:'General Sans','Outfit',sans-serif; font-size:.88rem; font-weight:600;
+  color:rgba(255,255,255,.92); margin-bottom:.12rem;
+}
+.ai-vp-city {
+  font-size:.7rem; color:rgba(255,255,255,.42);
+  font-family:'General Sans','Outfit',sans-serif; margin-bottom:.4rem;
+}
+.ai-vp-price {
+  font-family:'Butler','Playfair Display',serif; font-size:.98rem;
+  color:#4a9e95; margin-bottom:.4rem;
+}
+.ai-vp-stats {
+  display:flex; gap:.35rem; flex-wrap:wrap; margin-bottom:.55rem;
+}
+.ai-vp-stat {
+  background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.1);
+  border-radius:8px; padding:.18rem .45rem;
+  font-family:'General Sans','Outfit',sans-serif; font-size:.65rem; color:rgba(255,255,255,.65);
+}
+.ai-vp-actions { display:flex; gap:.4rem; }
+.ai-vp-action-btn {
+  flex:1; padding:.48rem .35rem; border-radius:9px;
+  font-family:'General Sans','Outfit',sans-serif; font-size:.68rem; font-weight:600;
+  letter-spacing:.05em; text-transform:uppercase; cursor:pointer;
+  border:1px solid rgba(74,158,149,.5); background:rgba(74,158,149,.15); color:#4a9e95;
+  transition:background .15s; text-align:center;
+}
+.ai-vp-action-btn:hover { background:rgba(74,158,149,.3); }
+.ai-vp-action-btn.secondary {
+  background:rgba(255,255,255,.07); border-color:rgba(255,255,255,.15);
+  color:rgba(255,255,255,.55);
+}
+.ai-vp-action-btn.secondary:hover { background:rgba(255,255,255,.12); color:rgba(255,255,255,.8); }
+
+/* AI in-page media frame (3D tour / features PDF) */
+.ai-media-frame {
+  position:fixed; inset:0; z-index:10050;
+  background:rgba(0,0,0,.9); backdrop-filter:blur(8px);
+  display:none; align-items:center; justify-content:center; padding:2.5vh 2vw;
+  opacity:0; transition:opacity .3s;
+}
+.ai-media-frame.open { display:flex; opacity:1; }
+.ai-mf-inner {
+  width:min(1100px,96vw); height:min(92vh,900px);
+  display:flex; flex-direction:column;
+  background:#0d0d0d; border:1px solid rgba(255,255,255,.1);
+  border-radius:16px; overflow:hidden; box-shadow:0 40px 100px rgba(0,0,0,.7);
+}
+.ai-mf-bar {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:.7rem 1.1rem; background:#111; border-bottom:1px solid rgba(255,255,255,.07);
+}
+.ai-mf-title {
+  font-family:'General Sans','Outfit',sans-serif; font-size:.72rem; letter-spacing:.14em;
+  text-transform:uppercase; color:rgba(255,255,255,.55);
+}
+.ai-mf-close {
+  width:32px; height:32px; border-radius:8px; flex-shrink:0;
+  background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.7); font-size:1rem; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; transition:background .2s,color .2s;
+}
+.ai-mf-close:hover { background:#c0392b; color:#fff; border-color:#c0392b; }
+.ai-mf-iframe { flex:1; width:100%; border:none; background:#000; }
+@media (max-width:600px) {
+  .ai-media-frame { padding:0; }
+  .ai-mf-inner { width:100vw; height:100dvh; border-radius:0; border:none; }
+}
+
+/* Global LEFT close button — shown over any assistant-opened window
+   (the windows' own close buttons sit on the right, behind the panel) */
+#ai-overlay-close {
+  display:none; position:fixed; top:1.1rem; left:1.1rem; z-index:16000;
+  width:46px; height:46px; border-radius:50%;
+  background:rgba(18,18,18,.85); border:1px solid rgba(255,255,255,.28);
+  color:#fff; font-size:1.25rem; line-height:1; cursor:pointer;
+  align-items:center; justify-content:center;
+  -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
+  box-shadow:0 6px 24px rgba(0,0,0,.5); transition:background .2s, transform .15s;
+}
+#ai-overlay-close::after {
+  content:'Esc'; position:absolute; left:54px; white-space:nowrap;
+  font-family:'General Sans','Outfit',sans-serif; font-size:.6rem; letter-spacing:.12em;
+  text-transform:uppercase; color:rgba(255,255,255,.45);
+}
+#ai-overlay-close:hover { background:#4a9e95; transform:scale(1.08); }
+body:has(#ai-media-frame.open) #ai-overlay-close,
+body:has(#project-gallery.active) #ai-overlay-close,
+body:has(#lightbox.active) #ai-overlay-close,
+body:has(#video-modal.active) #ai-overlay-close { display:flex; }
+
 .ai-voice-input-label {
   text-align:center; font-family:'General Sans','Inter',sans-serif;
   font-size:.6rem; letter-spacing:.07em; color:rgba(255,255,255,.2);
@@ -2559,7 +2756,7 @@
       <!-- Scroll-driven video — smaller, centered -->
       <div class="featured-video-wrap">
         <video id="featured-scroll-video" preload="auto" muted playsinline webkit-playsinline>
-          <source src="Chinook.mp4" type="video/mp4">
+          <source src="Chinook.mp4?v=20260531" type="video/mp4">
         </video>
         <!-- Gradient edge fades -->
         <div class="fv-fade fv-fade-left"></div>
@@ -4563,6 +4760,38 @@ Step 3 — Construction & Delivery: Permits, construction under project manager 
 7. 4920 Stone Ave N, Seattle WA 98103 — $2,200,000 — 3 bed / 3.5 bath / 2,690 SF
    Contemporary elegance in Fremont, Seattle. Open-plan living, refined finishes.
 
+== NAVIGATION TOOLS (VOICE MODE) ==
+You have tools to control the website in real time. Use them proactively and naturally — always call the tool AT THE SAME MOMENT you start speaking about it:
+
+- show_property(property_id) — call IMMEDIATELY when you begin discussing a specific property. Do not wait to finish describing it. Use these IDs: 10425 (Enatai presale), 312 ($3.5M Bellevue), 218 ($4.5M downtown Bellevue), 1224 ($6.45M), 1071 ($4.2M), 1305 ($2.4M Seattle), 4920 ($2.2M Seattle).
+  Example: "Let me show you the 312 property..." → call show_property('312') simultaneously.
+
+- navigate_to_section(section) — call when the user asks about or you pivot to a topic: 'properties' (all listings), 'services' (custom homes, remodel, kitchen), 'process' (how we work), 'map' (property locations), 'contact' (reach us), 'about' (company story).
+  Example: "Here's our process in three steps..." → call navigate_to_section('process').
+
+- open_gallery(property_id) — call when the user says "show me more photos", "I want to see all photos", "can I see the gallery".
+- play_video(property_id) — call when the user asks to see a video/movie of a home, or proactively offer + play it. Has video: 312, 218, 1224, 1071, 1305, 4920.
+- open_3d_tour(property_id) — call when the user asks for a 3D / virtual tour / walkthrough, or proactively offer + open it. Has tour: 312, 218, 1224, 1071.
+- show_features(property_id) — call when the user asks for the features list / included features / specs / floor plan. Has sheet: 312, 218, 1224.
+- Proactively OFFER video / 3D tour / features when showing a property that has them ("I can play the video or walk you through it in 3D — want me to?") and launch on a yes.
+- show_photos(property_id, category) — when the user asks for a SPECIFIC space ("show me the kitchen / master bedroom / backyard / the view"), open it. If that area isn't tagged, the full gallery opens — narrate which photos show it.
+- play_video with chapter — when the user wants a specific moment ("show the backyard on video"), pass chapter (backyard/kitchen/exterior/…).
+- show_on_map(property_id) — when asked where it is / location / "show on map".
+- show_neighborhood(property_id) — when asked what's nearby: schools, parks, supermarkets, restaurants, commute. If data isn't loaded, say the team will follow up with specifics — DO NOT invent school names or facts.
+- show_market_value(property_id) — when asked about price, value, "is it worth it", how it compares, or "why this price". It shows our price, the area average and why we price it so. If data isn't loaded, offer a comparative market analysis — DO NOT invent figures.
+- close_media() — when the user says close / stop the video / hide that / go back.
+- NEVER fabricate neighborhood facts or market numbers. If a tool returns available:false, acknowledge and offer a team follow-up.
+
+RULES:
+- NEVER ask permission to show ("Shall I show you?" / "Вам показати?"). Just show it as you speak. The screen is yours to drive.
+- The MOMENT you mention any property by name, address or price → call show_property in the same breath.
+- The MOMENT the topic shifts to services / process / map / contact / about → call navigate_to_section.
+- For ANY general/browse request ("show me everything", "what do you offer", "what homes do you build", "suggest something") → call navigate_to_section('properties') to open Our Homes, THEN talk through the options.
+- When asked what the company does beyond finished homes (remodeling, additions, kitchen & bath, custom builds) → call navigate_to_section('services').
+- Each time you name a NEW property, call show_property again for that one so the screen always matches your words.
+- Never call a tool silently — say a short lead-in ("Let me pull that up…", "Ось він…") while the tool fires.
+- If a client asks to compare two properties, call show_property for the first, describe it, then call show_property for the second.
+
 == YOUR TASKS ==
 You have TWO modes:
 
@@ -4576,8 +4805,15 @@ When client wants to schedule a viewing or meeting:
 1. Ask which property interests them
 2. Ask preferred date (offer Mon-Fri options, business hours 9am-6pm PST)
 3. Suggest 3 specific time slots for their preferred date
-4. Confirm their email for the calendar invite
-5. When all confirmed, output: <MEETING>{"property":"address","date":"2025-01-15","time":"10:00","duration":60,"clientName":"Name","clientEmail":"email@gmail.com","notes":"any notes"}</MEETING>
+4. ALWAYS ask for BOTH an email AND a phone number for the appointment.
+
+CONTACT RULES (important):
+- The Google Calendar invite and the confirmation email are issued ONLY when we have the client's EMAIL.
+- If the client gives an EMAIL (phone optional, even if they decline the phone) → that's fine: confirm and schedule, output <MEETING> with their email.
+- If the client gives a PHONE but DECLINES to share an email → do NOT promise a calendar invite or email. Instead: record the details, tell them a Bellshire Homes manager will personally CALL to confirm and coordinate the showing, and gently note that adding an email lets us send a calendar invite instantly. Still output <MEETING> but with clientEmail:null and include clientPhone.
+- Never present calendar/email links unless an email was provided.
+
+5. When confirmed, output: <MEETING>{"property":"address","date":"2025-01-15","time":"10:00","duration":60,"clientName":"Name","clientEmail":"email@gmail.com or null","clientPhone":"+1... or null","notes":"any notes"}</MEETING>
 
 IMPORTANT: Keep replies SHORT (2-3 sentences). Be warm and professional. Never ask more than 2 questions at once.`;
 
@@ -4600,7 +4836,8 @@ var AI_DEMO_FIELDS = [
 
 function openAIConsult() {
   document.getElementById('ai-modal-overlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
+  // Do NOT lock body scroll — page must stay scrollable so the agent can
+  // navigate the site (scroll to sections / highlight properties) beside the panel.
 }
 function closeAIConsult() {
   // Save conversation before closing
@@ -4849,13 +5086,18 @@ async function aiAskClaude(userMsg) {
     var meeting = null;
     if (mMatch) { try { meeting = JSON.parse(mMatch[1]); } catch(e){} }
 
-    var display = full.replace(/<F>[\s\S]*?<\/F>/g,'').replace(/<MEETING>[\s\S]*?<\/MEETING>/g,'').trim();
+    var display = full.replace(/<F>[\s\S]*?<\/F>/g,'').replace(/<MEETING>[\s\S]*?<\/MEETING>/g,'')
+                      .replace(/<ACT>[\s\S]*?<\/ACT>/g,'').trim();
     aiHideTyping();
-    aiAddMsg('ai', display);
+    var aiBubble = aiAddMsg('ai', display);
 
     // Apply fields from <F> block if present
     if (fields) aiUpdateForm(fields);
     if (meeting) aiShowMeetingCard(meeting);
+    // Run agent actions (navigate / show property / neighborhood / market / media)
+    var acts = aiRunActions(userMsg, full);
+    // If we opened media/cards, make the reply confirm it (backend often denies it can)
+    aiConfirmActions(acts, display, aiBubble);
 
     // ALWAYS also call /analyze as reliable fallback for form fill + meeting detection
     aiAnalyzeConversation();
@@ -4903,9 +5145,63 @@ function aiAnalyzeConversation() {
   }, 600);
 }
 
+// ── Meeting gating helpers ────────────────────────────────────────────────
+// A calendar invite + confirmation email are ONLY issued when we have an email.
+function aiMeetingEmail(m){ return (m && m.clientEmail) || (AI.formData && AI.formData.email) || ''; }
+function aiMeetingPhone(m){ return (m && (m.clientPhone || m.phone)) || (AI.formData && AI.formData.phone) || ''; }
+function aiConvIsUk(){ var c=document.getElementById('ai-chat'); return !!(c && /[Ѐ-ӿ]/.test(c.textContent||'')); }
+
+// "Manager will call" card — used when the client gave a phone but NO email.
+function aiBuildCallbackCard(meetings){
+  var uk = aiConvIsUk();
+  var phone = aiMeetingPhone(meetings[0]);
+  var rows = meetings.map(function(m){
+    var d = aiParseMeetingDate(m);
+    var ds = d.toLocaleDateString(uk?'uk-UA':'en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+    var ts = d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+    return '<div style="padding:.45rem 0;border-top:1px solid rgba(200,165,70,.2);">'
+      + '<div style="font-size:.9rem;color:rgba(255,255,255,.92);font-weight:600;">' + (m.property||(uk?'Перегляд будинку':'Property tour')) + '</div>'
+      + '<div style="font-size:.78rem;color:rgba(255,255,255,.6);">📅 ' + ds + ' · 🕐 ' + ts + ' PST</div>'
+      + '</div>';
+  }).join('');
+  var card = document.createElement('div');
+  card.className = 'ai-fd-card';
+  card.style.cssText = 'margin:.6rem 0;background:linear-gradient(135deg,rgba(200,165,70,.20),rgba(200,165,70,.06));border:1.5px solid rgba(200,165,70,.5);border-radius:16px;padding:1.2rem 1.3rem;font-family:Inter,sans-serif;width:100%;box-sizing:border-box;';
+  card.innerHTML =
+    '<div style="font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:#c8a546;margin-bottom:.6rem;font-weight:700;">📞 ' + (uk?'Дані зафіксовано':'Details recorded') + '</div>'
+    + rows
+    + (phone ? '<div style="font-size:.82rem;color:rgba(255,255,255,.6);margin-top:.5rem;">☎ ' + phone + '</div>' : '')
+    + '<div style="font-size:.82rem;color:rgba(255,255,255,.7);line-height:1.5;margin-top:.7rem;">'
+    + (uk
+        ? 'Менеджер Bellshire Homes обов’язково зв’яжеться з вами для підтвердження та узгодження деталей перегляду. Залиште email — і ми одразу надішлемо запрошення в календар.'
+        : 'A Bellshire Homes manager will personally call you to confirm and coordinate the showing details. Share an email and we’ll send a calendar invite right away.')
+    + '</div>';
+  return card;
+}
+
 function aiShowMeetingCard(m) {
   if (AI.meetingScheduled) return;
   AI.meetingScheduled = true;
+
+  // Make sure chat panel is visible
+  var leftP = document.getElementById('ai-left');
+  var setupP = document.getElementById('ai-setup');
+  if (leftP && leftP.style.display === 'none') {
+    if (setupP) setupP.style.display = 'none';
+    leftP.style.display = 'flex';
+    var rightP = document.getElementById('ai-right'); if (rightP) rightP.style.display = 'flex';
+  }
+  // No email → no calendar/email; record + promise a manager callback.
+  if (!aiMeetingEmail(m)) {
+    var chatC = document.getElementById('ai-chat');
+    if (chatC) { chatC.appendChild(aiBuildCallbackCard([m])); chatC.scrollTop = chatC.scrollHeight; }
+    document.getElementById('ai-submit-area').classList.add('show');
+    return;
+  }
+  return aiShowMeetingCardEmail(m);
+}
+
+function aiShowMeetingCardEmail(m) {
 
   // Make sure chat panel is visible
   var left = document.getElementById('ai-left');
@@ -5194,6 +5490,43 @@ function aiAddMsg(role, text) {
   var bub = document.createElement('div'); bub.className='ai-bubble'; bub.textContent=text;
   wrap.appendChild(av); wrap.appendChild(bub);
   chat.appendChild(wrap); chat.scrollTop=chat.scrollHeight;
+  return bub;
+}
+
+// When the chat agent OPENED media/cards client-side, the backend reply often
+// wrongly says "I can't show photos/video". Replace it with a positive confirmation.
+function aiActionsConfirmation(actions, sample){
+  var uk = /[Ѐ-ӿ]/.test(sample||'');
+  var cat = { kitchen: uk?'кухні':'kitchen', master: uk?'головної спальні':'primary bedroom', bedroom: uk?'спальні':'bedroom', bathroom: uk?'ванної':'bathroom', backyard: uk?"подвір’я":'backyard', living: uk?'вітальні':'living room', dining: uk?'їдальні':'dining room', view: uk?'краєвиду':'view', exterior: uk?'фасаду':'exterior' };
+  var order=['play_video','open_3d_tour','show_photos','open_gallery','show_features','show_on_map','show_neighborhood','show_market_value','show_property','navigate_to_section'];
+  var primary=null; for(var i=0;i<order.length && !primary;i++){ for(var j=0;j<actions.length;j++){ if(actions[j][0]===order[i]){ primary=actions[j]; break; } } }
+  if(!primary) return uk?'Готово — відкрила це для вас на екрані зліва. 👈':'Done — opened it for you on the left. 👈';
+  var n=primary[0], a=primary[1]||{}, what, verb = uk?'Відкрила':'Opened';
+  if (n==='play_video'){ verb = uk?'Запустила':'Started'; what = uk?('відео'+(a.chapter?(' на фрагменті '+(cat[a.chapter]||a.chapter)):'')):('the video'+(a.chapter?(' at the '+(cat[a.chapter]||a.chapter)+' section'):'')); }
+  else if(n==='open_3d_tour') what = uk?'3D-тур':'the 3D tour';
+  else if(n==='show_photos') what = uk?('фото '+(cat[a.category]||a.category)):('the '+(cat[a.category]||a.category)+' photos');
+  else if(n==='open_gallery') what = uk?'галерею фото':'the photo gallery';
+  else if(n==='show_features') what = uk?'характеристики та план':'the features & floor plan';
+  else if(n==='show_on_map') what = uk?'розташування на карті':'the location on the map';
+  else if(n==='show_neighborhood') what = uk?'інформацію про район':'the neighborhood info';
+  else if(n==='show_market_value') what = uk?'деталі ціни та цінності':'the pricing & value';
+  else if(n==='show_property') what = uk?'будинок':'the home';
+  else what = uk?'потрібний розділ':'the section';
+  return uk ? (verb+' '+what+' для вас — перегляньте на екрані зліва. 👈 Чи показати ще щось?')
+            : (verb+' '+what+' for you — take a look on the left. 👈 Anything else you’d like to see?');
+}
+
+function aiConfirmActions(acts, display, bubbleEl){
+  if (!acts || !acts.length) return display;
+  var MEDIA = ['show_photos','open_gallery','play_video','open_3d_tour','show_features','show_on_map'];
+  var didMedia = acts.some(function(a){ return MEDIA.indexOf(a[0])>=0; });
+  var refusal = /can'?t (show|display|play|provide)|cannot (show|display|play)|unable to (show|display|play)|не мож[уеливо]+\b[\s\S]{0,40}(показ|відтвор|продемонстр|фото|відео)|на жаль[,!]?\s*(я\s*)?не мож|вибач[те]*[,!]?\s*(але\s*)?(я\s*)?не мож/i.test(display||'');
+  if (didMedia || refusal) {
+    var conf = aiActionsConfirmation(acts, display);
+    if (bubbleEl) bubbleEl.textContent = conf;
+    return conf;
+  }
+  return display;
 }
 function aiShowTyping() {
   var chat = document.getElementById('ai-chat');
@@ -5234,7 +5567,7 @@ function aiOpenVoiceMode() {
   }
   AI.voiceMode = true;
   document.getElementById('ai-voice-overlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
+  // Keep page scrollable so the agent can navigate the site while talking.
   aiVoiceSyncAvatar();
   var st = document.getElementById('ai-voice-status');
   if (st) { st.textContent = 'Requesting mic…'; st.className = 'ai-voice-status'; }
@@ -5264,6 +5597,13 @@ function aiCloseVoiceMode() {
   // Clear voice meeting card so it doesn't persist on re-open
   var vmBox = document.getElementById('ai-voice-meeting');
   if (vmBox) { vmBox.style.display = 'none'; vmBox.innerHTML = ''; }
+  // Clear property card
+  var vpBox = document.getElementById('ai-voice-property');
+  if (vpBox) { vpBox.style.display = 'none'; vpBox.innerHTML = ''; }
+  var viBox = document.getElementById('ai-voice-info');
+  if (viBox) { viBox.style.display = 'none'; viBox.innerHTML = ''; }
+  if (typeof aiVoiceFeedClear === 'function') aiVoiceFeedClear();
+  AI_RT.currentFunctionCall = null;
   // Reset so corrected meeting can be re-detected next session
   AI.meetingScheduled = false;
   AI.lastMeeting = null;
@@ -5551,12 +5891,15 @@ async function aiVoiceAskClaude(userMsg) {
     var fields = null; if (fMatch) { try { fields = JSON.parse(fMatch[1]); } catch(e){} }
     var mMatch = full.match(/<MEETING>([\s\S]*?)<\/MEETING>/);
     var meeting = null; if (mMatch) { try { meeting = JSON.parse(mMatch[1]); } catch(e){} }
-    var display = full.replace(/<F>[\s\S]*?<\/F>/g,'').replace(/<MEETING>[\s\S]*?<\/MEETING>/g,'').trim();
+    var display = full.replace(/<F>[\s\S]*?<\/F>/g,'').replace(/<MEETING>[\s\S]*?<\/MEETING>/g,'')
+                      .replace(/<ACT>[\s\S]*?<\/ACT>/g,'').trim();
 
     aiHideTyping();
-    aiAddMsg('ai', display);
+    var aiBubble2 = aiAddMsg('ai', display);
     if (fields) aiUpdateForm(fields);
     if (meeting) aiShowMeetingCard(meeting);
+    var acts2 = aiRunActions(userMsg, full);
+    display = aiConfirmActions(acts2, display, aiBubble2);
     aiVoiceShowResponse(display);
     aiVoiceSpeak(display);
   } catch(err) {
@@ -5684,7 +6027,8 @@ var AI_RT = {
   active: false, stream: null,
   transcript: '', userTranscript: '',
   selectedVoice: 'sage',
-  lastAddedAI: ''   // tracks last AI text added to chat (for dedup across event fallbacks)
+  lastAddedAI: '',
+  currentFunctionCall: null  // tracks in-flight tool call from AI
 };
 
 // Helper: add AI message to chat once (deduplicate across multiple event types)
@@ -5692,7 +6036,8 @@ function aiRtAddAssistantMessage(text) {
   text = (text || '').trim();
   if (!text || text === AI_RT.lastAddedAI) return;
   AI_RT.lastAddedAI = text;
-  aiVoiceShowResponse(text);
+  aiVoiceFeedMsg('ai', text);   // finalized line lives in the history feed
+  aiVoiceShowResponse('');      // clear live caption (avoid duplicate of last line)
   aiAddMsg('ai', text);
   AI.history.push({ role: 'assistant', content: text });
   AI_RT.transcript = '';
@@ -5741,7 +6086,147 @@ async function aiRealtimeOpenSession(stream) {
     dc.onopen = function() {
       AI_RT.active = true;
       if (badge) badge.textContent = '🎙 OpenAI Realtime · Live';
-      // Transcription is already enabled via session creation (audio.input.transcription)
+
+      // Register navigation & property tools
+      dc.send(JSON.stringify({
+        type: 'session.update',
+        session: {
+          type: 'realtime',
+          tool_choice: 'auto',
+          tools: [
+            {
+              type: 'function',
+              name: 'show_property',
+              description: 'Shows the property on the website: scrolls the page to it, highlights its card, and displays a photo card with price and stats in the side panel. You MUST call this automatically — without asking permission — the moment you mention any property by name, address or price. Call it again for every new property you name so the screen always matches your words.',
+              parameters: {
+                type: 'object',
+                properties: {
+                  property_id: {
+                    type: 'string',
+                    description: 'Property ID: 10425 (Enatai presale), 312 ($3.5M), 218 ($4.5M), 1224 ($6.45M), 1071 ($4.2M), 1305 ($2.4M Seattle), 4920 ($2.2M Seattle)',
+                    enum: ['10425','312','218','1224','1071','1305','4920']
+                  }
+                },
+                required: ['property_id']
+              }
+            },
+            {
+              type: 'function',
+              name: 'navigate_to_section',
+              description: 'Smoothly scrolls the website to a section. You MUST call this automatically — without asking permission. Triggers: ANY general/browse request ("show me everything", "what do you have", "what do you offer", "what homes do you build", "suggest something", "show me your houses") → use "properties" (the Our Homes listing). Questions about what else the company does beyond finished homes (remodeling, additions, kitchen & bath, custom builds) → use "services". Questions about how you work / steps / timeline → use "process". Locations → "map". How to reach you → "contact". Company story → "about".',
+              parameters: {
+                type: 'object',
+                properties: {
+                  section: {
+                    type: 'string',
+                    description: 'properties = Our Homes (all available listings — use for any general "show me what you have" request); services = what the company offers (custom homes, remodeling, room additions, kitchen & bath); process = how we work; map = property locations; contact = contact info; about = company story',
+                    enum: ['properties','services','process','map','contact','about']
+                  }
+                },
+                required: ['section']
+              }
+            },
+            {
+              type: 'function',
+              name: 'open_gallery',
+              description: 'Open the full photo gallery overlay for a property when the user wants to see all photos.',
+              parameters: {
+                type: 'object',
+                properties: {
+                  property_id: {
+                    type: 'string',
+                    enum: ['10425','312','218','1224','1071','1305','4920']
+                  }
+                },
+                required: ['property_id']
+              }
+            },
+            {
+              type: 'function',
+              name: 'play_video',
+              description: 'Plays the cinematic video tour of a property in a fullscreen player. Call automatically when the user asks to see a video / movie of a home, OR proactively offer it. Optional "chapter" jumps to a part of the video (e.g. backyard, kitchen, exterior) if the user asks for a specific moment. Available for: 312, 218, 1224, 1071, 1305, 4920.',
+              parameters: {
+                type: 'object',
+                properties: {
+                  property_id: { type: 'string', enum: ['312','218','1224','1071','1305','4920'] },
+                  chapter: { type: 'string', description: 'Optional part to jump to, e.g. backyard, kitchen, exterior, living, view' }
+                },
+                required: ['property_id']
+              }
+            },
+            {
+              type: 'function',
+              name: 'open_3d_tour',
+              description: 'Opens the interactive 3D Matterport virtual walkthrough of a property in a fullscreen viewer on the website. Call this automatically when the user asks for a 3D tour / virtual tour / walkthrough / to walk through the house, OR proactively offer and open it. Available for: 312, 218, 1224, 1071.',
+              parameters: {
+                type: 'object',
+                properties: { property_id: { type: 'string', enum: ['312','218','1224','1071'] } },
+                required: ['property_id']
+              }
+            },
+            {
+              type: 'function',
+              name: 'show_features',
+              description: 'Opens the Included Features & Floor Plan PDF sheet for a property in a fullscreen viewer on the website. Call this automatically when the user asks for the features list, included features, specs, what comes with the home, or the floor plan. Available for: 312, 218, 1224.',
+              parameters: {
+                type: 'object',
+                properties: { property_id: { type: 'string', enum: ['312','218','1224'] } },
+                required: ['property_id']
+              }
+            },
+            {
+              type: 'function',
+              name: 'show_photos',
+              description: 'Opens photos of a SPECIFIC room or area of a home (the gallery, jumped to that area). Call automatically when the user asks to see a particular space — e.g. "show me the kitchen / master bedroom / bathrooms / living room / backyard / the view". If that area is not tagged yet, the full gallery opens and you should narrate which photos show it.',
+              parameters: {
+                type: 'object',
+                properties: {
+                  property_id: { type: 'string', enum: ['10425','312','218','1224','1071','1305','4920'] },
+                  category: { type: 'string', description: 'Room/area: exterior, kitchen, master, bedroom, bathroom, living, dining, backyard, garage, view, basement, office' }
+                },
+                required: ['property_id','category']
+              }
+            },
+            {
+              type: 'function',
+              name: 'show_on_map',
+              description: 'Scrolls to the interactive map and centers it on the property, opening its location pin. Call automatically when the user asks where a home is, to see it on the map, or about its location.',
+              parameters: {
+                type: 'object',
+                properties: { property_id: { type: 'string', enum: ['10425','312','218','1224','1071','1305','4920'] } },
+                required: ['property_id']
+              }
+            },
+            {
+              type: 'function',
+              name: 'show_neighborhood',
+              description: 'Shows a card with what is nearby — schools, parks, shopping/dining, transit/commute. Call automatically when the user asks what is around, about schools, parks, supermarkets, restaurants, or commute. If data is not loaded for that home, offer to have the team follow up (do not invent specifics).',
+              parameters: {
+                type: 'object',
+                properties: { property_id: { type: 'string', enum: ['10425','312','218','1224','1071','1305','4920'] } },
+                required: ['property_id']
+              }
+            },
+            {
+              type: 'function',
+              name: 'show_market_value',
+              description: 'Shows a card with our price, the area average / price-per-sqft, and WHY the home is priced this way (value points). Call automatically when the user asks about price, value, whether it is worth it, how it compares to the market, or why it costs this much. If data is not loaded, offer a comparative analysis from the team (do not invent figures).',
+              parameters: {
+                type: 'object',
+                properties: { property_id: { type: 'string', enum: ['10425','312','218','1224','1071','1305','4920'] } },
+                required: ['property_id']
+              }
+            },
+            {
+              type: 'function',
+              name: 'close_media',
+              description: 'Closes any open media window (video, 3D tour, photo gallery, features PDF, info card). Call automatically when the user says close it / stop the video / go back / hide that.',
+              parameters: { type: 'object', properties: {} }
+            }
+          ]
+        }
+      }));
+
       // Trigger greeting
       setTimeout(function() {
         if (AI_RT.dc && AI_RT.dc.readyState === 'open') {
@@ -5881,18 +6366,22 @@ function aiVoiceExtractFields() {
 
 // Show meeting card inside the voice popup + auto-open Calendar & Email
 function aiShowMeetingInVoice(m, autoOpen) {
-  var box = document.getElementById('ai-voice-meeting');
-  if (!box) return;
+  if (!aiVoiceFeedEl()) return;
+  // No email → record + manager callback (no calendar/email links).
+  if (!aiMeetingEmail(m)) { aiVoiceFeedPush(aiBuildCallbackCard([m]), 'callback'); return; }
 
   var d = aiParseMeetingDate(m);
   var dateStr = d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' });
   var timeStr = d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
   var calLink  = aiCalendarLink(m);
   var mailLink = aiMailtoLink(m, dateStr, timeStr);
+  var key = 'mtg:' + m.property + '|' + m.date + '|' + m.time + '|' + (m.clientEmail||'');
 
-  // Buttons stack vertically on narrow screens for readability
   var btnsDir = window.innerWidth <= 480 ? 'column' : 'row';
-  box.innerHTML =
+  var card = document.createElement('div');
+  card.className = 'ai-fd-card';
+  card.style.cssText = 'background:linear-gradient(135deg,rgba(74,158,149,.22),rgba(74,158,149,.08));border:1.5px solid rgba(74,158,149,.5);border-radius:14px;padding:1rem 1.1rem;font-family:Inter,sans-serif;width:100%;box-sizing:border-box;';
+  card.innerHTML =
     '<div style="font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:#4a9e95;margin-bottom:.7rem;font-weight:700;text-align:center;">✓ Meeting Confirmed</div>'
     + '<div style="font-size:1rem;color:rgba(255,255,255,.95);font-weight:600;margin-bottom:.35rem;text-align:center;line-height:1.3;">' + (m.property || 'Bellshire Homes Property Tour') + '</div>'
     + '<div style="font-size:.85rem;color:rgba(255,255,255,.65);margin-bottom:.3rem;text-align:center;">📅 ' + dateStr + ' · 🕐 ' + timeStr + ' PST</div>'
@@ -5901,9 +6390,8 @@ function aiShowMeetingInVoice(m, autoOpen) {
     + '<a href="' + calLink + '" target="_blank" style="flex:1;text-align:center;background:#4a9e95;color:#fff;text-decoration:none;padding:.7rem .8rem;border-radius:10px;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">📅 Google Calendar</a>'
     + '<a href="' + mailLink + '" target="_blank" style="flex:1;text-align:center;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.85);text-decoration:none;padding:.7rem .8rem;border-radius:10px;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">✉ Send Email</a>'
     + '</div>';
-  box.style.display = 'block';
+  aiVoiceFeedPush(card, key);
 
-  // Auto-open calendar then email — only on first confirmation
   if (autoOpen) {
     setTimeout(function() {
       aiOpenLink(calLink);
@@ -5949,31 +6437,25 @@ function aiCombinedMailtoLink(meetings) {
   return 'mailto:' + (m0.clientEmail||'') + '?subject=' + subject + '&body=' + body;
 }
 
-// Render a multi-tour schedule card inside the VOICE popup
+// Render a multi-tour schedule in the VOICE popup — each tour gets its OWN
+// confirmation card in the history feed, plus one "email full schedule" button.
 function aiShowMeetingsInVoice(meetings, autoOpen) {
-  var box = document.getElementById('ai-voice-meeting');
-  if (!box || !meetings || !meetings.length) return;
+  if (!aiVoiceFeedEl() || !meetings || !meetings.length) return;
   if (meetings.length === 1) { aiShowMeetingInVoice(meetings[0], autoOpen); return; }
+  // No email → single callback card listing all tours.
+  if (!aiMeetingEmail(meetings[0])) { aiVoiceFeedPush(aiBuildCallbackCard(meetings), 'callback'); return; }
 
+  // One persistent card per tour (deduped by its own key)
+  meetings.forEach(function(m){ aiShowMeetingInVoice(m, false); });
+
+  // Combined "email full schedule" button (single, replaced on refresh)
   var mailLink = aiCombinedMailtoLink(meetings);
-  var rows = meetings.map(function(m){
-    var d = aiParseMeetingDate(m);
-    var ds = d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
-    var ts = d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-    var cal = aiCalendarLink(m);
-    return '<div style="padding:.6rem 0;border-top:1px solid rgba(74,158,149,.18);">'
-      + '<div style="font-size:.9rem;color:rgba(255,255,255,.95);font-weight:600;margin-bottom:.2rem;">' + (m.property||'Property Tour') + '</div>'
-      + '<div style="font-size:.78rem;color:rgba(255,255,255,.6);margin-bottom:.4rem;">📅 ' + ds + ' · 🕐 ' + ts + ' PST</div>'
-      + '<a href="' + cal + '" target="_blank" style="display:inline-block;background:#4a9e95;color:#fff;text-decoration:none;padding:.45rem .8rem;border-radius:8px;font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;">📅 Add to Calendar</a>'
-      + '</div>';
-  }).join('');
-  box.innerHTML =
-    '<div style="font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:#4a9e95;margin-bottom:.5rem;font-weight:700;text-align:center;">✓ ' + meetings.length + ' Tours Confirmed</div>'
-    + (meetings[0].clientEmail ? '<div style="font-size:.78rem;color:rgba(255,255,255,.55);margin-bottom:.4rem;text-align:center;word-break:break-all;">✉ ' + meetings[0].clientEmail + '</div>' : '')
-    + rows
-    + '<a href="' + mailLink + '" target="_blank" style="display:block;text-align:center;margin-top:.7rem;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.85);text-decoration:none;padding:.7rem;border-radius:10px;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">✉ Email Full Schedule</a>';
-  box.style.display = 'block';
-  // Auto-open links only on first confirmation (not on later visual refreshes)
+  var btn = document.createElement('div');
+  btn.className = 'ai-fd-card';
+  btn.style.cssText = 'width:100%;box-sizing:border-box;';
+  btn.innerHTML = '<a href="' + mailLink + '" target="_blank" style="display:block;text-align:center;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.85);text-decoration:none;padding:.7rem;border-radius:10px;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">✉ Email Full Schedule (' + meetings.length + ' tours)</a>';
+  aiVoiceFeedPush(btn, 'schedule-email');
+
   if (autoOpen) {
     setTimeout(function() {
       meetings.forEach(function(m, i){ setTimeout(function(){ aiOpenLink(aiCalendarLink(m)); }, i*900); });
@@ -5992,6 +6474,13 @@ function aiShowMeetingsCard(meetings) {
     if (setup) setup.style.display = 'none';
     left.style.display = 'flex';
     var right = document.getElementById('ai-right'); if (right) right.style.display = 'flex';
+  }
+  // No email → single callback card; manager will call (no calendar/email).
+  if (!aiMeetingEmail(meetings[0])) {
+    var chatCB = document.getElementById('ai-chat');
+    if (chatCB) { chatCB.appendChild(aiBuildCallbackCard(meetings)); chatCB.scrollTop = chatCB.scrollHeight; }
+    document.getElementById('ai-submit-area').classList.add('show');
+    return;
   }
   var mailLink = aiCombinedMailtoLink(meetings);
   var rows = meetings.map(function(m){
@@ -6087,7 +6576,8 @@ function aiRealtimeHandleEvent(msg) {
     case 'conversation.item.input_audio_transcription.completed':
       var uTxt = aiNormalizeVoiceText((msg.transcript || '').trim());
       if (uTxt) {
-        aiVoiceShowTranscript(uTxt);
+        aiVoiceFeedMsg('user', uTxt);   // finalized line lives in the history feed
+        aiVoiceShowTranscript('');      // clear live caption
         aiAddMsg('user', uTxt);
         AI.history.push({ role: 'user', content: uTxt });
         AI.sessionSource = 'voice';
@@ -6182,6 +6672,41 @@ function aiRealtimeHandleEvent(msg) {
       }
       break;
 
+    // ── Tool / function calls ──────────────────────────────
+    case 'response.output_item.added':
+      if (msg.item && msg.item.type === 'function_call') {
+        AI_RT.currentFunctionCall = { call_id: msg.item.call_id, name: msg.item.name, args: '' };
+      }
+      break;
+
+    case 'response.function_call_arguments.delta':
+      if (AI_RT.currentFunctionCall && msg.delta) {
+        AI_RT.currentFunctionCall.args += msg.delta;
+      }
+      break;
+
+    case 'response.function_call_arguments.done': {
+      var fn = AI_RT.currentFunctionCall || {};
+      // Fall back to the event's own fields (GA API includes them on .done)
+      var callId = fn.call_id || msg.call_id;
+      var fnName = fn.name || msg.name;
+      var rawArgs = (fn.args && fn.args.length) ? fn.args : (msg.arguments || '{}');
+      var fnArgs = {};
+      try { fnArgs = JSON.parse(rawArgs || '{}'); } catch(e) {}
+      console.log('[RT tool]', fnName, fnArgs);
+      var fnResult = aiExecuteAction(fnName, fnArgs);
+      if (AI_RT.dc && AI_RT.dc.readyState === 'open' && callId) {
+        AI_RT.dc.send(JSON.stringify({
+          type: 'conversation.item.create',
+          item: { type: 'function_call_output', call_id: callId, output: JSON.stringify(fnResult) }
+        }));
+        AI_RT.dc.send(JSON.stringify({ type: 'response.create' }));
+      }
+      AI_RT.currentFunctionCall = null;
+      break;
+    }
+    // ── End tool calls ─────────────────────────────────────
+
     case 'error':
       console.error('RT error:', msg.error);
       var st2 = document.getElementById('ai-voice-status');
@@ -6247,6 +6772,639 @@ function aiRealtimeDisconnect() {
   if (AI_RT.audioEl) { AI_RT.audioEl.srcObject = null; AI_RT.audioEl = null; }
   AI_RT.active = false; AI_RT.stream = null;
   AI_RT.transcript = ''; AI_RT.userTranscript = '';
+}
+
+// ── AI Navigation & Property Tools ────────────────────────────────────────────
+
+var AI_VP = { images: [], idx: 0 };  // voice popup photo slider state
+
+// ── Voice history feed: dialog bubbles + cards accumulate & scroll ─────────
+var AI_FEED = { n:0, keys:{}, imgs:{}, idx:{} };
+function aiVoiceFeedEl(){ return document.getElementById('ai-voice-feed'); }
+function aiVoiceFeedScroll(){
+  var c = document.getElementById('ai-voice-content');
+  if (c) setTimeout(function(){ c.scrollTop = c.scrollHeight; }, 70);
+}
+// Push a card node into the ACTIVE history container:
+//  • voice mode  → the voice popup feed (dedupes by key, moves to bottom)
+//  • text chat   → the chat log (#ai-chat), simple append (chronological)
+function aiVoiceFeedPush(node, key){
+  var inVoice = AI.voiceMode && document.getElementById('ai-voice-feed');
+  if (inVoice) {
+    var feed = document.getElementById('ai-voice-feed');
+    if (key && AI_FEED.keys[key]) { try { AI_FEED.keys[key].remove(); } catch(e){} }
+    if (key) AI_FEED.keys[key] = node;
+    feed.appendChild(node);
+    aiVoiceFeedScroll();
+  } else {
+    var chat = document.getElementById('ai-chat');
+    if (!chat) return;
+    node.style.margin = node.style.margin || '.2rem 0';
+    chat.appendChild(node);
+    chat.scrollTop = chat.scrollHeight;
+  }
+}
+// Add a dialog bubble (role: 'ai' | 'user')
+function aiVoiceFeedMsg(role, text){
+  text = (text||'').trim(); if (!text) return;
+  var feed = aiVoiceFeedEl(); if (!feed) return;
+  // skip if identical to the last bubble of same role
+  var last = feed.lastElementChild;
+  if (last && last.classList.contains('ai-fd-'+role) && last.textContent === text) return;
+  var div = document.createElement('div');
+  div.className = 'ai-fd-msg ai-fd-' + (role==='user'?'user':'ai');
+  div.textContent = text;
+  aiVoiceFeedPush(div);
+}
+// Per-card photo slider (each feed property card is self-contained)
+function aiVpFeedPhoto(cid, dir){
+  var imgs = AI_FEED.imgs[cid]; if (!imgs || !imgs.length) return;
+  var i = ((AI_FEED.idx[cid]||0) + dir + imgs.length) % imgs.length; AI_FEED.idx[cid] = i;
+  var img = document.getElementById(cid+'-img'), idxEl = document.getElementById(cid+'-idx');
+  if (img) { img.style.opacity='.5'; img.src = imgs[i]; img.onload=function(){ img.style.opacity='1'; }; }
+  if (idxEl) idxEl.textContent = i+1;
+}
+function aiVoiceFeedClear(){
+  var feed = aiVoiceFeedEl(); if (feed) feed.innerHTML='';
+  AI_FEED = { n:0, keys:{}, imgs:{}, idx:{} };
+}
+
+// Per-property media (video, 3D matterport tour, included-features PDF)
+var AI_MEDIA_BASE = 'https://bellshireinc.com/wp-content/uploads';
+var AI_PROPERTY_MEDIA = {
+  '10425': { video: null, tour: null, features: null },
+  '312':   { video: AI_MEDIA_BASE + '/2026/02/6524_Cinematoc_4K_Branded_New_Music_v3-3.mp4', tour: 'https://my.matterport.com/show/?m=qWUqaQRY6yW', features: AI_MEDIA_BASE + '/2026/02/312-160th-Ave-NE_2-12-2026_features-sheet.pdf' },
+  '218':   { video: AI_MEDIA_BASE + '/2025/06/218_109th_ave_se_bellevue_wa_98004_mls-1080p.mp4', tour: 'https://my.matterport.com/show/?m=fCu7X7Yp5bg', features: AI_MEDIA_BASE + '/2026/03/218-Downtown-Bellshire_Homes_Included_Features_218_109th.pdf' },
+  '1224':  { video: AI_MEDIA_BASE + '/2025/06/1224-108Th-Ave-Se-Bellevue-Wa-98004-Mls-2160P.mp4', tour: 'https://my.matterport.com/show/?m=ByWEYEzjo3j', features: AI_MEDIA_BASE + '/2025/07/18-web-or-mls-1224-108th-ave-se-INCLUDED-FEATURES.pdf' },
+  '1071':  { video: AI_MEDIA_BASE + '/2023/12/1071_102nd_pl_se_bellevue_wa_98004_mls-720p.mp4', tour: 'https://my.matterport.com/show/?m=TF4g1xwSirA', features: null },
+  '1305':  { video: AI_MEDIA_BASE + '/2023/12/1305_north_50th_street_seattle_wa_98103_mls-720p.mp4', tour: null, features: null },
+  '4920':  { video: AI_MEDIA_BASE + '/2023/12/3140374168-video-converter.com_.mp4', tour: null, features: null }
+};
+
+/* ════════════════════════════════════════════════════════════════════════
+   EDITABLE DATA — fill in real values, the agent uses these automatically.
+   Empty values degrade gracefully (agent opens full gallery / offers follow-up).
+   ════════════════════════════════════════════════════════════════════════ */
+
+// Map: site property id → numeric id used by the Leaflet map listings.
+var AI_MAP_ID = { '10425':6, '312':7, '1224':1, '218':2, '1071':3, '1305':4, '4920':5 };
+
+// Photo categories → 0-based indices into projectGalleries[id].images.
+// FILL these per property. Empty/missing category → agent opens the full gallery.
+// Categories the agent understands: exterior, kitchen, master, bedroom, bathroom,
+// living, dining, backyard, garage, view, basement, office, primary_bath.
+var PROPERTY_PHOTO_TAGS = {
+  // Tagged by visual review of each gallery (0-based indices).
+  '312':   { exterior:[0,1,2,36,40,41], kitchen:[12,14,15,16,17], master:[25], bedroom:[23,25,26,32,34], bathroom:[19,24,27,28,33,35], living:[4,5,6,7,8,21,22], dining:[13,18,47], backyard:[9,10,11,37,38,39], view:[42,43,44,45,46] },
+  '218':   { exterior:[0], living:[3,4], kitchen:[5,9], dining:[1,6,7], backyard:[10] },
+  '1224':  { exterior:[0,1,2,3,4,5,43], living:[6,15,16,49,54,58], kitchen:[17,18,19,20,22,23,50,56,57,60,61], dining:[8,9,45,62,66], master:[32,33], bedroom:[24,26,29,38], bathroom:[25,27,28,30,34,35,36,37,39,40,48,67,69] },
+  '1071':  { exterior:[0], living:[2,4,8], kitchen:[5,6], dining:[7], master:[9], bedroom:[9], bathroom:[10,11] },
+  '1305':  { exterior:[0,14], living:[2,3], kitchen:[4,6], dining:[5], master:[9], bedroom:[9,12,15], bathroom:[10] },
+  '4920':  { exterior:[0,27,31], living:[3,4,5,7,37], kitchen:[9,10,11,13,15], dining:[10,16], master:[21], bedroom:[19,21,28,29,34], bathroom:[18,20,23,24,26,30,35], backyard:[22,31,32], view:[32,36] },
+  '10425': { exterior:[0,1,2,3,4,5,6], backyard:[5,6] }
+};
+
+// Video chapter timestamps in SECONDS, e.g. { backyard: 45, kitchen: 20 }.
+// FILL these. Empty → agent plays the video from the start.
+var VIDEO_CHAPTERS = {
+  // Seconds into each tour video, set by frame review (±a few seconds).
+  '312':  { view:4, exterior:12, kitchen:36, bathroom:68, living:76, bedroom:84, backyard:92 },
+  '218':  { view:4, exterior:12, living:20, bedroom:28, bathroom:52, backyard:76 },
+  '1224': { exterior:12, living:20, kitchen:36, bathroom:76, view:116 },
+  '1071': { view:12, exterior:20 },
+  '1305': { backyard:4, exterior:16, living:28, kitchen:40, view:76, bedroom:124 },
+  '4920': { exterior:4, living:16, kitchen:52, dining:148, view:160 }
+};
+
+// Neighborhood facts. Empty strings → agent offers to follow up instead of guessing.
+// (312 seeded as an EXAMPLE of the format — verify before production.)
+var NEIGHBORHOOD = {
+  // 312 160th Ave NE — Crossroads / NE Bellevue 98008
+  '312':  {
+    schools:  'Bellevue School District (top-rated in WA). Sherwood Forest Elementary and Interlake High are within walking distance.',
+    parks:    '34-acre Crossroads Park next door — paved trails, tennis & basketball courts and a skate bowl; Lake Sammamish State Park is a short drive.',
+    shopping: 'Crossroads Bellevue (dining, grocery, entertainment) is minutes away; about 15 minutes to Bellevue Square.',
+    transit:  'Roughly 5 minutes to the Microsoft campus and ~20 minutes to Seattle, with quick I-90 and SR-520 access.'
+  },
+  // 218 109th Ave SE — Surrey Downs / Downtown Bellevue 98004
+  '218':   {
+    schools:  'Bellevue School District: Enatai Elementary, Chinook Middle, and Bellevue High — among Washington’s top-ranked high schools.',
+    parks:    'Surrey Downs Park (great lawn, playground, sport courts) and Bellevue Downtown Park are within walking distance.',
+    shopping: 'Walkable to Old Bellevue, Downtown Park and The Bellevue Collection (Bellevue Square); Target, QFC and Amazon Fresh nearby.',
+    transit:  'Heart of downtown Bellevue — walkable, with quick I-405 access and light rail nearby.'
+  },
+  // 1224 108th Ave SE — Surrey Downs / Downtown Bellevue 98004
+  '1224':  {
+    schools:  'Bellevue School District: Enatai Elementary, Chinook Middle, and the A+ Bellevue High — one of WA’s best public high schools.',
+    parks:    'Steps from Surrey Downs Park and a short walk to the 21-acre Bellevue Downtown Park.',
+    shopping: 'Walk to The Bellevue Collection, Old Bellevue boutiques and dining; everyday shopping at QFC, Target and Amazon Fresh.',
+    transit:  'Premier downtown-Bellevue setting — walkable, with I-405 and East Link light rail close by.'
+  },
+  // 1071 102nd Place SE — east side near Downtown Bellevue 98004
+  '1071':  {
+    schools:  'Bellevue School District — Enatai Elementary, Chinook Middle and the top-ranked Bellevue High.',
+    parks:    'Close to Surrey Downs Park and Bellevue Downtown Park; Mercer Slough Nature Park is minutes south.',
+    shopping: 'Quick reach to The Bellevue Collection and downtown dining; Factoria shops nearby.',
+    transit:  'Easy I-405 and I-90 access — about 20 minutes to downtown Seattle.'
+  },
+  // 1305 N 50th St — Phinney Ridge, Seattle 98103
+  '1305':  {
+    schools:  'Seattle Public Schools — Greenwood / West Woodland Elementary, Hamilton International Middle, and Ballard High.',
+    parks:    'Walk to Woodland Park Zoo and Green Lake Park with its 2.8-mile loop trail.',
+    shopping: 'Phinney Avenue’s cafés, restaurants and indie shops are steps away; Greenwood and Fremont are minutes off.',
+    transit:  'Highly walkable, with frequent bus service into downtown Seattle.'
+  },
+  // 4920 Stone Ave N — Fremont, Seattle 98103
+  '4920':  {
+    schools:  'Seattle Public Schools — B.F. Day Elementary, Hamilton International Middle, and Lincoln High.',
+    parks:    'Gas Works Park on Lake Union, Fremont Peak Park and the Burke-Gilman Trail are all close.',
+    shopping: 'Heart of Fremont — PCC Community Markets, the year-round Sunday Market, and indie shops and dining.',
+    transit:  'Very walkable and bikeable, with multiple bus routes and the Burke-Gilman Trail at hand.'
+  },
+  // 10425 SE 20th St — Enatai, Bellevue 98004 (presale)
+  '10425': {
+    schools:  'Walkable Enatai Elementary (top 20% in WA), Chinook Middle, and Bellevue High (~1350 average SAT, 92% graduation rate).',
+    parks:    'Enatai Beach Park on Lake Washington (beach, picnic, boat launch) and Chesterfield Beach Park are minutes away.',
+    shopping: 'Close to Factoria and downtown Bellevue shopping and dining.',
+    transit:  'Quick I-90 on-ramp — about 15–20 minutes to downtown Seattle or Bellevue.'
+  }
+};
+
+// Market context + value justification. Empty avgArea → agent offers to follow up.
+// (312 seeded as an EXAMPLE — verify with real comps before production.)
+var MARKET = {
+  // Area figures are recent Redfin medians (98004 ≈ $886/sqft, ~$1.9M median;
+  // 98008 ≈ $678/sqft, ~$1.5M; Phinney Ridge ~$1.4M; Fremont ~$975K). Verify before production.
+  '312':  {
+    avgArea: 'Bellevue’s 98008 runs around a $1.5M median (~$680 / sq ft); new-construction luxury like this trades at a premium.',
+    pricePerSqft: '≈ $795 / sq ft',
+    value: [
+      'Brand-new construction with builder warranty',
+      'Chef’s kitchen and floor-to-ceiling windows',
+      'Larger lot and outdoor living than nearby resales',
+      'Top-rated Bellevue School District'
+    ]
+  },
+  '218':   {
+    avgArea: '98004 is Bellevue’s premier zip — roughly $886 / sq ft and a ~$1.9M median; downtown-walkable new builds sit at the top of the market.',
+    pricePerSqft: '≈ $1,025 / sq ft',
+    value: [
+      'Downtown Bellevue location, walkable to The Bellevue Collection',
+      'Designer kitchen with seamless indoor-outdoor flow',
+      'New construction in a tightly held neighborhood',
+      'Top Bellevue schools (Enatai / Chinook / Bellevue High)'
+    ]
+  },
+  '1224':  {
+    avgArea: '98004 trades around $886 / sq ft; trophy new-construction homes of this scale rarely come to market.',
+    pricePerSqft: '≈ $960 / sq ft',
+    value: [
+      '6,713 sq ft with a daylit basement home theater',
+      'Thermador chef’s kitchen and private terrace',
+      'Century-old pines on a premium downtown-Bellevue lot',
+      'Top-rated Bellevue School District'
+    ]
+  },
+  '1071':  {
+    avgArea: 'In 98004 (~$886 / sq ft), this 5,920 sq ft new build is competitively priced for the neighborhood.',
+    pricePerSqft: '≈ $710 / sq ft',
+    value: [
+      'Soaring ceilings and premium finishes throughout',
+      '5,920 sq ft of new construction on Bellevue’s east side',
+      'Minutes to downtown Bellevue and I-405',
+      'Top Bellevue School District'
+    ]
+  },
+  '1305':  {
+    avgArea: 'Phinney Ridge runs around a $1.4M median; craftsman new builds near Green Lake price above that.',
+    pricePerSqft: '≈ $770 / sq ft',
+    value: [
+      'Craftsman-inspired luxury near Woodland Park Zoo & Green Lake',
+      'Gourmet kitchen and a lush private backyard',
+      'Highly walkable, family-friendly North Seattle',
+      'Ballard High / Hamilton International schools'
+    ]
+  },
+  '4920':  {
+    avgArea: 'Fremont’s median is around $975K; contemporary new construction like this is positioned at the premium end.',
+    pricePerSqft: '≈ $820 / sq ft',
+    value: [
+      'Contemporary new build in vibrant Fremont',
+      'Open-plan living with refined finishes',
+      'Walk/bike to PCC, the Sunday Market and Burke-Gilman Trail',
+      '“Center of the Universe” location near major tech employers'
+    ]
+  },
+  '10425': {
+    avgArea: 'Enatai (98004) is one of Bellevue’s most coveted, lake-close neighborhoods — among the city’s highest $ / sq ft.',
+    pricePerSqft: 'Presale — pricing on request',
+    value: [
+      'Rare presale — customize finishes early',
+      'Coveted Enatai setting near Lake Washington',
+      'Walkable to top-rated Enatai Elementary',
+      'Bold architectural design with premium finishes'
+    ]
+  }
+};
+
+// ── Show specific room/area photos ────────────────────────────────────────
+function aiShowPhotos(propId, category) {
+  category = (category || '').toLowerCase().replace(/\s+/g, '_');
+  if (typeof openProjectGallery !== 'function') return { ok:false, reason:'gallery unavailable' };
+  openProjectGallery(propId);                       // loads images + opens grid
+  var tags = PROPERTY_PHOTO_TAGS[propId] || {};
+  var idxs = tags[category];
+  if (idxs && idxs.length && typeof openLightbox === 'function') {
+    setTimeout(function(){ openLightbox(idxs[0]); }, 380);
+    return { ok:true, property:propId, category:category, shown:'photo #' + (idxs[0]+1) };
+  }
+  return { ok:true, property:propId, category:category, note:'No tagged photos for "' + category + '" yet — opened the full gallery so you can point them out.' };
+}
+
+// ── Focus a property on the interactive map ───────────────────────────────
+function aiShowOnMap(propId) {
+  var sec = document.getElementById('map-section');
+  if (sec) sec.scrollIntoView({ behavior:'smooth', block:'start' });
+  var mapId = AI_MAP_ID[propId];
+  setTimeout(function(){
+    var el = mapId != null && document.querySelector('.map-listing[data-id="' + mapId + '"]');
+    if (el) el.click();   // listing click handler centers map + opens popup + highlights
+  }, 650);
+  return { ok:true, property:propId, located: mapId != null };
+}
+
+// ── Play video, optionally jumping to a chapter (backyard, kitchen, …) ─────
+function aiPlayVideoChapter(propId, chapter) {
+  var m = AI_PROPERTY_MEDIA[propId];
+  if (!m || !m.video) return { ok:false, reason:'no video for this property' };
+  if (typeof openVideoModal === 'function') openVideoModal(m.video);
+  var secs = null;
+  if (chapter) { var ch = VIDEO_CHAPTERS[propId] || {}; secs = ch[(chapter || '').toLowerCase().replace(/\s+/g,'_')]; }
+  if (secs != null) {
+    var p = document.getElementById('video-modal-player');
+    if (p) {
+      var seek = function(){ try { p.currentTime = secs; p.play(); } catch(e){} };
+      if (p.readyState >= 1) seek(); else p.addEventListener('loadedmetadata', seek, { once:true });
+    }
+    return { ok:true, property:propId, chapter:chapter, seconds:secs };
+  }
+  return { ok:true, property:propId, chapter:(chapter||null), note: chapter ? 'No timestamp set for "' + chapter + '" yet — playing from the start.' : 'playing from start' };
+}
+
+// ── Generic info card → pushed into the history feed (neighborhood / market) ──
+function aiShowInfoCard(title, bodyHtml, key) {
+  var card = document.createElement('div');
+  card.className = 'ai-fd-card';
+  card.style.cssText = 'width:100%;box-sizing:border-box;border:1.5px solid rgba(74,158,149,.35);border-radius:14px;background:rgba(255,255,255,.04);padding:.85rem 1rem;';
+  card.innerHTML = '<div class="ai-vp-info-title">' + title + '</div>' + bodyHtml;
+  aiVoiceFeedPush(card, key || ('info:' + title));
+}
+
+function aiShowNeighborhood(propId) {
+  var n = NEIGHBORHOOD[propId];
+  if (!n || !(n.schools || n.parks || n.shopping || n.transit)) {
+    return { available:false, note:'Neighborhood details for this home are not loaded yet — offer to have the team follow up with specifics.' };
+  }
+  var rows = [
+    ['🎓 Schools', n.schools], ['🌳 Parks & nature', n.parks],
+    ['🛒 Shopping & dining', n.shopping], ['🚆 Getting around', n.transit]
+  ].filter(function(r){ return r[1]; });
+  aiShowInfoCard('Neighborhood · ' + propId, rows.map(function(r){
+    return '<div class="ai-vp-info-row"><span>' + r[0] + '</span><p>' + r[1] + '</p></div>';
+  }).join(''), 'nbhd:' + propId);
+  return { available:true, schools:n.schools, parks:n.parks, shopping:n.shopping, transit:n.transit };
+}
+
+function aiShowMarket(propId) {
+  var m = MARKET[propId];
+  if (!m || !(m.avgArea || (m.value && m.value.length))) {
+    return { available:false, note:'Market context for this home is not loaded yet — offer to have the team send a comparative analysis.' };
+  }
+  var ourPrice = '';
+  if (typeof FEATURED_CONFIG !== 'undefined') {
+    for (var i=0;i<FEATURED_CONFIG.projects.length;i++){ if (FEATURED_CONFIG.projects[i].id===propId){ ourPrice = FEATURED_CONFIG.projects[i].price; break; } }
+  }
+  var html = '';
+  if (ourPrice) html += '<div class="ai-vp-info-row"><span>🏷 Our price</span><p>' + ourPrice + (m.pricePerSqft ? ' &middot; ' + m.pricePerSqft : '') + '</p></div>';
+  if (m.avgArea) html += '<div class="ai-vp-info-row"><span>📊 Area average</span><p>' + m.avgArea + '</p></div>';
+  if (m.value && m.value.length) html += '<div class="ai-vp-info-row"><span>✨ Why this price</span><p>' + m.value.map(function(v){return '• ' + v;}).join('<br>') + '</p></div>';
+  aiShowInfoCard('Pricing & value · ' + propId, html, 'mkt:' + propId);
+  return { available:true, ourPrice:ourPrice, pricePerSqft:m.pricePerSqft, areaAverage:m.avgArea, valuePoints:m.value };
+}
+
+// ── Close any open media window(s) ────────────────────────────────────────
+function aiCloseAllMedia() {
+  var closed = [];
+  var vm = document.getElementById('video-modal');
+  if (vm && vm.classList.contains('active') && typeof closeVideoModal === 'function') { closeVideoModal(); closed.push('video'); }
+  var mf = document.getElementById('ai-media-frame');
+  if (mf && mf.classList.contains('open')) { aiCloseMediaFrame(); closed.push('frame'); }
+  var lb = document.getElementById('lightbox');
+  if (lb && lb.classList.contains('active') && typeof closeLightbox === 'function') { closeLightbox(); closed.push('photo'); }
+  var pg = document.getElementById('project-gallery');
+  if (pg && pg.classList.contains('active') && typeof closeProjectGallery === 'function') { closeProjectGallery(); closed.push('gallery'); }
+  var inf = document.getElementById('ai-voice-info');
+  if (inf) { inf.style.display = 'none'; inf.innerHTML = ''; }
+  return { ok:true, closed:closed };
+}
+
+// In-page overlay with an iframe — used for 3D tours and PDF feature sheets
+// (avoids popup-blocker that kills window.open from non-gesture voice events).
+function aiShowMediaFrame(url, label) {
+  var ov = document.getElementById('ai-media-frame');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.id = 'ai-media-frame';
+    ov.className = 'ai-media-frame';
+    ov.innerHTML =
+      '<div class="ai-mf-inner">'
+      + '<div class="ai-mf-bar"><span class="ai-mf-title"></span>'
+      + '<button class="ai-mf-close" title="Close">&#x2715;</button></div>'
+      + '<iframe class="ai-mf-iframe" allow="fullscreen; xr-spatial-tracking; gyroscope; accelerometer" allowfullscreen></iframe>'
+      + '</div>';
+    document.body.appendChild(ov);
+    ov.addEventListener('click', function(e){ if (e.target === ov) aiCloseMediaFrame(); });
+    ov.querySelector('.ai-mf-close').addEventListener('click', aiCloseMediaFrame);
+  }
+  ov.querySelector('.ai-mf-title').textContent = label || '';
+  ov.querySelector('.ai-mf-iframe').src = url;
+  ov.classList.add('open');
+}
+function aiCloseMediaFrame() {
+  var ov = document.getElementById('ai-media-frame');
+  if (ov) { ov.classList.remove('open'); var f = ov.querySelector('.ai-mf-iframe'); if (f) f.src = 'about:blank'; }
+}
+
+// Close the TOP-most assistant-opened window (by z-index priority).
+// Returns true if it closed something.
+function aiCloseTopOverlay() {
+  var vm = document.getElementById('video-modal');
+  var mf = document.getElementById('ai-media-frame');
+  var lb = document.getElementById('lightbox');
+  var pg = document.getElementById('project-gallery');
+  if (vm && vm.classList.contains('active')) { if (typeof closeVideoModal === 'function') closeVideoModal(); return true; }
+  if (mf && mf.classList.contains('open'))   { aiCloseMediaFrame(); return true; }
+  if (lb && lb.classList.contains('active')) { if (typeof closeLightbox === 'function') closeLightbox(); return true; }
+  if (pg && pg.classList.contains('active')) { if (typeof closeProjectGallery === 'function') closeProjectGallery(); return true; }
+  return false;
+}
+
+// ESC closes assistant windows first (capture phase blocks older handlers
+// so the assistant panel itself stays open while a window is up).
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'Escape') return;
+  if (aiCloseTopOverlay()) { e.stopImmediatePropagation(); e.preventDefault(); }
+}, true);
+
+// ── Agent actions for TEXT chat (backend prompt can't call tools) ─────────
+// Drives the same site actions from (a) explicit <ACT> markers if the model
+// emits them, and (b) intent detection on the user's message + AI reply.
+var AI_LAST_PROP = null;
+function aiDetectProperty(text){
+  text = (text||'').toLowerCase();
+  var map = [
+    ['10425', ['10425','enatai','енатай','se 20th','20th st','20-th','20-ї']],
+    ['312',   ['312','160th','160-']],
+    ['218',   ['218','109th','109-']],
+    ['1224',  ['1224','108th','108-']],
+    ['1071',  ['1071','102nd','102-']],
+    ['1305',  ['1305','50th street','north 50','phinney','фінні','фінні-рідж']],
+    ['4920',  ['4920','stone ave','стоун','fremont','фрімонт']]
+  ];
+  for (var i=0;i<map.length;i++) for (var j=0;j<map[i][1].length;j++) if (text.indexOf(map[i][1][j])>=0) return map[i][0];
+  return null;
+}
+function aiHas(text, arr){ text=(text||'').toLowerCase(); return arr.some(function(k){ return text.indexOf(k)>=0; }); }
+
+function aiRunActions(userMsg, aiText){
+  var u = (userMsg||'').toLowerCase();
+  var actions = [];
+
+  // (a) explicit <ACT>{...}</ACT> markers (future-proof if backend prompt adds them)
+  var blocks = (aiText||'').match(/<ACT>[\s\S]*?<\/ACT>/g) || [];
+  blocks.forEach(function(b){ try { var a = JSON.parse(b.replace(/<\/?ACT>/g,'')); if (a && a.action) actions.push([a.action, a]); } catch(e){} });
+
+  // (b) intent detection
+  var propInMsg = aiDetectProperty(userMsg) || aiDetectProperty(aiText);  // explicitly named now
+  var prop = propInMsg || AI_LAST_PROP;                                    // current context
+
+  // 1) GENERAL / section intents take priority (even if a property is in context)
+  var nav = null;
+  if (aiHas(u,['service','послуг','remodel','ремонт','addition','прибудов','kitchen and bath','окрім','крім','besides','other than','what else','ще пропон','інші послуг'])) nav='services';
+  else if (aiHas(u,['process','процес','how do you work','етап','timeline','термін','як ви прац','кроки'])) nav='process';
+  else if (aiHas(u,['contact','контакт','reach','зв’яза','зателеф','подзвон'])) nav='contact';
+  else if (aiHas(u,['everything','усі ваші','всі ваші','усі будинк','всі будинк','all your homes','what do you have','що пропон','show me homes','покажіть будинк','покажи будинк','listings','available homes','доступн будинк','which homes','які будинк','show me your homes','усе що є','все що є'])) nav='properties';
+
+  if (nav) {
+    actions.push(['navigate_to_section',{section:nav}]);
+  } else if (prop) {
+    // detect a specific room/area FIRST — used both for photos and as a video chapter
+    var rooms=[['kitchen',['kitchen','кухн']],['master',['master','майстер','primary','головн спальн']],['bedroom',['bedroom','спальн']],['bathroom',['bathroom','ванн','санв']],['backyard',['backyard','подвір','задн двір','двір','yard']],['living',['living','вітальн']],['dining',['dining','їдальн']],['view',['краєвид',' вид ','views']],['exterior',['exterior','фасад','facade','зовн']]];
+    var room=null; for(var r=0;r<rooms.length;r++){ if(aiHas(u,rooms[r][1])){ room=rooms[r][0]; break; } }
+    var wantVideo = aiHas(u,['video','відео','movie','ролик','film','фільм']);
+    var want3d    = aiHas(u,['3d','tour','тур','walkthrough','прогулян','virtual','віртуал']);
+
+    if (aiHas(u,['school','школ','park','парк','nearby','поряд','навколо','around','shopping','магазин','supermarket','супермаркет','grocery','restaurant','ресторан','commute','transit','транспорт','район'])) actions.push(['show_neighborhood',{property_id:prop}]);
+    if (aiHas(u,['price','ціна','цін','вартіст','value','worth','cost','expensive','дорог','why','чому','average','середн','market','ринок','compare','порівн'])) actions.push(['show_market_value',{property_id:prop}]);
+    if (aiHas(u,['map','карт','where','location','розташ','located','знаходит',' де '])) actions.push(['show_on_map',{property_id:prop}]);
+    // Video — jump to the room chapter if a room was named ("video of the kitchen")
+    if (wantVideo) actions.push(['play_video', room ? {property_id:prop, chapter:room} : {property_id:prop}]);
+    if (want3d)    actions.push(['open_3d_tour',{property_id:prop}]);
+    if (aiHas(u,['feature','характеристик','floor plan','план','specs','included','що входить'])) actions.push(['show_features',{property_id:prop}]);
+    // Photos of a room — only if the user didn't ask for video/3d of it
+    if (room && !wantVideo && !want3d) actions.push(['show_photos',{property_id:prop,category:room}]);
+    else if (!room && aiHas(u,['photo','фото','gallery','галере','picture','зображен','images','світлин'])) actions.push(['open_gallery',{property_id:prop}]);
+
+    var hasContext = actions.some(function(a){ return ['show_property','open_gallery','play_video','open_3d_tour','show_photos','show_features'].indexOf(a[0])>=0; });
+    if (!actions.length) {
+      if (propInMsg) actions.push(['show_property',{property_id:prop}]);
+    } else if (!hasContext && propInMsg) {
+      actions.unshift(['show_property',{property_id:prop}]);
+    }
+    AI_LAST_PROP = prop;
+  }
+
+  // dedupe + run staggered so cards/scroll animate in order
+  var seen={}; actions = actions.filter(function(a){ var k=a[0]+JSON.stringify(a[1]); if(seen[k]) return false; seen[k]=1; return true; });
+  actions.forEach(function(a,i){ setTimeout(function(){ try { aiExecuteAction(a[0], a[1]); } catch(e){} }, i*350); });
+  return actions;
+}
+
+function aiExecuteAction(name, args) {
+  var sectionMap = {
+    properties: '#properties', services: '#services',
+    process:    '#process',    map:      '#map-section',
+    contact:    '#contact',    about:    '#about'
+  };
+
+  if (name === 'navigate_to_section') {
+    var el = document.querySelector(sectionMap[args.section] || '');
+    if (el) {
+      setTimeout(function() {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        el.style.transition = 'box-shadow .4s';
+        el.style.boxShadow = '0 0 0 2px rgba(74,158,149,.4) inset';
+        setTimeout(function() { el.style.boxShadow = ''; }, 1800);
+      }, 200);
+    }
+    return { ok: true, section: args.section };
+  }
+
+  if (name === 'show_property') {
+    aiShowPropertyInVoice(args.property_id);
+    var propSec = document.getElementById('properties');
+    if (propSec) {
+      setTimeout(function() {
+        propSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        var card = document.querySelector('.property-card[onclick*="\'' + args.property_id + '\'"]');
+        if (card) {
+          setTimeout(function() {
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            card.style.transition = 'box-shadow .4s, transform .4s';
+            card.style.boxShadow = '0 0 0 2.5px #4a9e95';
+            card.style.transform = 'translateY(-4px) scale(1.01)';
+            setTimeout(function() { card.style.boxShadow = ''; card.style.transform = ''; }, 2500);
+          }, 600);
+        }
+      }, 350);
+    }
+    return { ok: true, property: args.property_id };
+  }
+
+  if (name === 'open_gallery') {
+    if (typeof openProjectGallery === 'function') {
+      setTimeout(function() { openProjectGallery(args.property_id); }, 300);
+    }
+    return { ok: true, property: args.property_id };
+  }
+
+  if (name === 'play_video') {
+    return aiPlayVideoChapter(args.property_id, args.chapter);
+  }
+
+  if (name === 'show_photos') {
+    return aiShowPhotos(args.property_id, args.category);
+  }
+
+  if (name === 'show_on_map') {
+    return aiShowOnMap(args.property_id);
+  }
+
+  if (name === 'show_neighborhood') {
+    return aiShowNeighborhood(args.property_id);
+  }
+
+  if (name === 'show_market_value') {
+    return aiShowMarket(args.property_id);
+  }
+
+  if (name === 'close_media') {
+    return aiCloseAllMedia();
+  }
+
+  if (name === 'open_3d_tour') {
+    var mt = AI_PROPERTY_MEDIA[args.property_id];
+    if (mt && mt.tour) {
+      setTimeout(function(){ aiShowMediaFrame(mt.tour, '3D Virtual Tour'); }, 200);
+      return { ok: true, property: args.property_id };
+    }
+    return { ok: false, reason: 'no 3D tour available for this property' };
+  }
+
+  if (name === 'show_features') {
+    var mf = AI_PROPERTY_MEDIA[args.property_id];
+    if (mf && mf.features) {
+      setTimeout(function(){ aiShowMediaFrame(mf.features, 'Included Features & Floor Plan'); }, 200);
+      return { ok: true, property: args.property_id };
+    }
+    return { ok: false, reason: 'no features sheet available for this property' };
+  }
+
+  return { error: 'unknown action' };
+}
+
+function aiShowPropertyInVoice(propId) {
+  var box = document.getElementById('ai-voice-property');
+  if (!box) return;
+
+  var prop = null;
+  if (typeof FEATURED_CONFIG !== 'undefined') {
+    for (var i = 0; i < FEATURED_CONFIG.projects.length; i++) {
+      if (FEATURED_CONFIG.projects[i].id === propId) { prop = FEATURED_CONFIG.projects[i]; break; }
+    }
+  }
+  if (!prop) return;
+
+  var imgs = [];
+  if (typeof projectGalleries !== 'undefined' && projectGalleries[propId]) {
+    imgs = projectGalleries[propId].images;
+  } else if (prop.image) {
+    imgs = [prop.image];
+  }
+  if (!imgs.length) return;
+
+  var cid = 'aivp-' + (++AI_FEED.n);              // unique id for this card's slider
+  AI_FEED.imgs[cid] = imgs; AI_FEED.idx[cid] = 0;
+
+  var statusLabels = { 'for-sale': 'For Sale', presale: 'Presale', pending: 'Pending', sold: 'Sold' };
+  var statsHtml = (prop.stats || []).map(function(s) {
+    return '<span class="ai-vp-stat">' + s.value + ' ' + s.label + '</span>';
+  }).join('');
+  var priceColor = prop.status === 'presale' ? '#c8a546' : '#4a9e95';
+  var priceLabel = (prop.price && prop.price !== 'Presale') ? prop.price : 'Available for Presale';
+
+  var card = document.createElement('div');
+  card.id = cid;
+  card.className = 'ai-fd-card';
+  card.style.cssText = 'border-radius:14px;overflow:hidden;border:1.5px solid rgba(74,158,149,.35);background:rgba(255,255,255,.04);';
+  card.innerHTML =
+    '<div class="ai-vp-img-wrap">'
+    + '<img id="' + cid + '-img" src="' + imgs[0] + '" alt="' + prop.address + '" loading="lazy">'
+    + '<span class="ai-vp-badge ' + (prop.status||'') + '">' + (statusLabels[prop.status]||'') + '</span>'
+    + (imgs.length > 1
+        ? '<div class="ai-vp-img-counter"><span id="' + cid + '-idx">1</span> / ' + imgs.length + '</div>'
+          + '<div class="ai-vp-img-nav">'
+          + '<button class="ai-vp-nav-btn" onclick="aiVpFeedPhoto(\'' + cid + '\',-1)">&#8592;</button>'
+          + '<button class="ai-vp-nav-btn" onclick="aiVpFeedPhoto(\'' + cid + '\',1)">&#8594;</button>'
+          + '</div>'
+        : '')
+    + '</div>'
+    + '<div class="ai-vp-body">'
+    + '<div class="ai-vp-address">' + prop.address + '</div>'
+    + '<div class="ai-vp-city">' + (prop.city||'') + '</div>'
+    + '<div class="ai-vp-price" style="color:' + priceColor + ';">' + priceLabel + '</div>'
+    + '<div class="ai-vp-stats">' + statsHtml + '</div>'
+    + '<div class="ai-vp-actions">'
+    + '<button class="ai-vp-action-btn" onclick="aiVpScrollTo(\'' + propId + '\')">View on page</button>'
+    + '<button class="ai-vp-action-btn secondary" onclick="openProjectGallery(\'' + propId + '\')">All photos</button>'
+    + '</div>'
+    + (function(){
+        var m = AI_PROPERTY_MEDIA[propId] || {};
+        var b = '';
+        if (m.video)    b += '<button class="ai-vp-action-btn secondary" onclick="aiExecuteAction(\'play_video\',{property_id:\'' + propId + '\'})">▶ Video</button>';
+        if (m.tour)     b += '<button class="ai-vp-action-btn secondary" onclick="aiExecuteAction(\'open_3d_tour\',{property_id:\'' + propId + '\'})">3D Tour</button>';
+        if (m.features) b += '<button class="ai-vp-action-btn secondary" onclick="aiExecuteAction(\'show_features\',{property_id:\'' + propId + '\'})">Features</button>';
+        return b ? '<div class="ai-vp-actions" style="margin-top:.4rem;">' + b + '</div>' : '';
+      })()
+    + '</div>';
+
+  // One card per property in history; re-showing moves it to the bottom.
+  aiVoiceFeedPush(card, 'prop:' + propId);
+}
+
+function aiVpScrollTo(propId) {
+  var propSec = document.getElementById('properties');
+  if (propSec) propSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  var card = document.querySelector('.property-card[onclick*="\'' + propId + '\'"]');
+  if (card) {
+    setTimeout(function() {
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      card.style.transition = 'box-shadow .4s, transform .4s';
+      card.style.boxShadow = '0 0 0 2.5px #4a9e95';
+      card.style.transform = 'translateY(-4px) scale(1.01)';
+      setTimeout(function() { card.style.boxShadow = ''; card.style.transform = ''; }, 2500);
+    }, 500);
+  }
 }
 
 // (mic button onclick is set directly in HTML to aiOpenVoiceMode)
@@ -6520,6 +7678,8 @@ function aiRealtimeDisconnect() {
 
     <!-- ── Content area: fills all space down to input ── -->
     <div class="ai-voice-content" id="ai-voice-content">
+      <!-- Scrollable history: dialog + all property/info/meeting cards accumulate here -->
+      <div class="ai-voice-feed" id="ai-voice-feed"></div>
       <div class="ai-voice-response" id="ai-voice-response"></div>
       <div class="ai-voice-transcript" id="ai-voice-transcript"></div>
 
@@ -6534,6 +7694,10 @@ function aiRealtimeDisconnect() {
 
       <!-- Meeting card shown here when appointment is confirmed -->
       <div id="ai-voice-meeting" style="display:none;margin:.4rem 0;background:linear-gradient(135deg,rgba(74,158,149,.22),rgba(74,158,149,.08));border:1.5px solid rgba(74,158,149,.5);border-radius:14px;padding:1rem 1.1rem;font-family:Inter,sans-serif;width:100%;box-sizing:border-box;"></div>
+      <!-- Property card shown when AI calls show_property tool -->
+      <div id="ai-voice-property"></div>
+      <!-- Info card (neighborhood / pricing) shown by show_neighborhood / show_market_value -->
+      <div id="ai-voice-info" style="display:none;"></div>
     </div>
 
     <!-- Text input for typing while in voice mode -->
@@ -6682,6 +7846,9 @@ function aiRealtimeDisconnect() {
     <video id="video-modal-player" controls playsinline></video>
   </div>
 </div>
+
+<!-- Global LEFT close button for assistant-opened windows (Esc also works) -->
+<button id="ai-overlay-close" onclick="aiCloseTopOverlay()" title="Закрити (Esc)" aria-label="Close">&#x2715;</button>
 
 </body>
 </html>
