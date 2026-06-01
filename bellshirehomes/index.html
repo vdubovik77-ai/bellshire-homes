@@ -4451,6 +4451,14 @@ body:has(#video-modal.active) #ai-overlay-close { display:flex; }
     player.play().catch(() => {});
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
+    // If the client is talking to Alexandra, duck the video music so she stays audible.
+    if (typeof aiApplyDucking === 'function') {
+      setTimeout(aiApplyDucking, 60);
+      player.addEventListener('loadeddata', function onLD() {
+        player.removeEventListener('loadeddata', onLD);
+        aiApplyDucking();
+      });
+    }
   }
   function closeVideoModal() {
     const modal = document.getElementById('video-modal');
@@ -5419,7 +5427,54 @@ function aiVoiceSyncAvatar() {
 }
 
 // ── UI state helpers ─────────────────────────────────
+// ── Audio ducking: lower video volume while talking to Alexandra ──────
+// When the voice assistant is active, any video with sound (the cinematic
+// property player) is ducked to a comfortable "bed" level so the client can
+// hear Alexandra. While she is actively speaking it ducks further; when she's
+// just listening it stays at the bed level. Restores full volume on voice exit.
+function aiVoiceIsActive() {
+  return (typeof AI !== 'undefined' && AI.voiceMode) ||
+         (typeof AI_RT !== 'undefined' && AI_RT && AI_RT.active);
+}
+function aiDuckTargetVolume() {
+  if (!aiVoiceIsActive()) return null;               // not in voice mode → no ducking
+  if (typeof AI_VR_state !== 'undefined' && AI_VR_state === 'speaking') return 0.06; // she's talking → quiet bed
+  return 0.18;                                        // listening / thinking → soft bed
+}
+function aiRampVolume(v, target, ms) {
+  try {
+    if (v._aiRampRAF) cancelAnimationFrame(v._aiRampRAF);
+    var start = (typeof v.volume === 'number') ? v.volume : 1, t0 = performance.now();
+    function step(now) {
+      var k = Math.min(1, (now - t0) / (ms || 350));
+      v.volume = Math.max(0, Math.min(1, start + (target - start) * k));
+      if (k < 1) v._aiRampRAF = requestAnimationFrame(step);
+    }
+    v._aiRampRAF = requestAnimationFrame(step);
+  } catch (e) { try { v.volume = Math.max(0, Math.min(1, target)); } catch(_){} }
+}
+function aiApplyDucking() {
+  var target = aiDuckTargetVolume();
+  document.querySelectorAll('video').forEach(function(v) {
+    if (v.muted) return;                              // skip decorative muted videos (hero, hover, tour scenes)
+    if (v.srcObject) return;                           // skip stream videos — that's Alexandra's avatar/voice, never duck her
+    if (target === null) {
+      if (v.dataset.aiDucked) {                       // restore previous volume
+        aiRampVolume(v, parseFloat(v.dataset.aiPrevVol || '1') || 1, 400);
+        delete v.dataset.aiDucked; delete v.dataset.aiPrevVol;
+      }
+    } else {
+      if (!v.dataset.aiDucked) {                       // remember original volume once
+        v.dataset.aiPrevVol = String(typeof v.volume === 'number' ? v.volume : 1);
+        v.dataset.aiDucked = '1';
+      }
+      aiRampVolume(v, target, 300);
+    }
+  });
+}
+
 function aiVoiceSetState(state) {
+  aiApplyDucking();   // keep video volume in sync with the voice state
   var ring   = document.getElementById('ai-voice-ring');
   var waves  = document.getElementById('ai-voice-waves');
   var status = document.getElementById('ai-voice-status');
