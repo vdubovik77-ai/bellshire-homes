@@ -7120,7 +7120,7 @@ function tourShowScene(idx) {
   } else {
     mediaEl.innerHTML =
       '<div class="tour-mini-meta">Scene ' + (idx+1) + '</div>'
-      + '<img src="' + media.url + '" alt="' + caption + '" onerror="this.style.opacity=.3">'
+      + '<img src="' + media.url + '" alt="' + caption + '" onerror="this.onerror=null;this.src=\'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&h=800&fit=crop\';this.style.opacity=.7">'
       + (caption ? '<div class="tour-media-caption">' + caption + '</div>' : '');
   }
   var mapData = scene.map || {
@@ -7148,25 +7148,83 @@ function tourToggleNarrate() {
   }
 }
 
+function tourPickVoice() {
+  var voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+  return voices.find(function(x){ return /^en-/i.test(x.lang) && /samantha|victoria|karen|moira|tessa|female/i.test(x.name); })
+      || voices.find(function(x){ return /^en-/i.test(x.lang); })
+      || null;
+}
+if (window.speechSynthesis) {
+  window.speechSynthesis.onvoiceschanged = function(){};
+}
+setInterval(function(){
+  if (TOUR.autoNarrate && window.speechSynthesis && window.speechSynthesis.speaking) {
+    window.speechSynthesis.pause(); window.speechSynthesis.resume();
+  }
+}, 10000);
+
+function tourAlexandraAvailable() {
+  return typeof AI_RT !== 'undefined' && AI_RT && AI_RT.dc
+      && AI_RT.dc.readyState === 'open' && AI_RT.active;
+}
+
+function tourSpeakViaAlexandra(text) {
+  if (!tourAlexandraAvailable()) return false;
+  AI_RT.dc.send(JSON.stringify({
+    type: 'conversation.item.create',
+    item: { type: 'message', role: 'system',
+            content: [{ type: 'input_text',
+                        text: 'TOUR NARRATION — read the following aloud verbatim, warm and unhurried. '
+                            + 'Do not add intro/outro and do not say anything else. Text:\n\n' + text }] }
+  }));
+  AI_RT.dc.send(JSON.stringify({ type: 'response.create' }));
+  var done = false;
+  function onMsg(e) {
+    try {
+      var msg = JSON.parse(e.data);
+      if (!done && msg && msg.type === 'response.done') {
+        done = true;
+        AI_RT.dc.removeEventListener('message', onMsg);
+        if (TOUR.autoNarrate && TOUR.idx < TOUR.data.scenes.length - 1) {
+          setTimeout(function(){ if (TOUR.autoNarrate) tourNext(); }, 1000);
+        } else if (TOUR.autoNarrate) {
+          TOUR.autoNarrate = false;
+          var btn = document.getElementById('tour-narrate');
+          btn.textContent = '🔊 Auto-narrate'; btn.classList.add('primary');
+        }
+      }
+    } catch(_) {}
+  }
+  AI_RT.dc.addEventListener('message', onMsg);
+  return true;
+}
+
 function tourSpeak(text) {
+  if (tourSpeakViaAlexandra(text)) return;
   if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
-  var u = new SpeechSynthesisUtterance(text);
-  u.rate = 0.97; u.pitch = 1.0; u.volume = 1.0;
-  var voices = window.speechSynthesis.getVoices();
-  var v = voices.find(function(x){ return /en-/i.test(x.lang) && /female|samantha|victoria|karen|moira|tessa/i.test(x.name); })
-       || voices.find(function(x){ return /en-/i.test(x.lang); });
-  if (v) u.voice = v;
-  u.onend = function() {
-    if (TOUR.autoNarrate && TOUR.idx < TOUR.data.scenes.length - 1) {
-      setTimeout(function(){ if (TOUR.autoNarrate) tourNext(); }, 900);
-    } else if (TOUR.autoNarrate) {
-      TOUR.autoNarrate = false;
-      var btn = document.getElementById('tour-narrate');
-      btn.textContent = '🔊 Auto-narrate'; btn.classList.add('primary');
+  var chunks = (text || '').match(/[^.!?]+[.!?]+\s*/g) || [text];
+  var i = 0;
+  var v = tourPickVoice();
+  function speakNext() {
+    if (!TOUR.autoNarrate || i >= chunks.length) {
+      if (TOUR.autoNarrate && TOUR.idx < TOUR.data.scenes.length - 1) {
+        setTimeout(function(){ if (TOUR.autoNarrate) tourNext(); }, 900);
+      } else if (TOUR.autoNarrate) {
+        TOUR.autoNarrate = false;
+        var btn = document.getElementById('tour-narrate');
+        btn.textContent = '🔊 Auto-narrate'; btn.classList.add('primary');
+      }
+      return;
     }
-  };
-  window.speechSynthesis.speak(u);
+    var u = new SpeechSynthesisUtterance(chunks[i].trim());
+    u.rate = 0.97; u.pitch = 1.0; u.volume = 1.0;
+    if (v) u.voice = v;
+    u.onend   = function(){ i++; speakNext(); };
+    u.onerror = function(){ i++; speakNext(); };
+    try { window.speechSynthesis.speak(u); } catch(e) { i++; speakNext(); }
+  }
+  speakNext();
 }
 
 function tourUpdateMap(mapData) {
