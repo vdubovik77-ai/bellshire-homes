@@ -7258,8 +7258,15 @@ var PROPERTY_PHOTO_TAGS = {
 // FILL these. Empty → agent plays the video from the start.
 var VIDEO_CHAPTERS = {
   // Seconds into each tour video, set by frame review (±a few seconds).
-  '312':  { view:4, exterior:12, kitchen:36, bathroom:68, living:76, bedroom:84, backyard:92 },
-  '218':  { view:4, exterior:12, living:20, bedroom:28, bathroom:52, backyard:76 },
+  // 312 — timecodes from frame-by-frame review (seconds)
+  '312':  { view:0, exterior:4, living:20, great_room:20, stairs:34, kitchen:36, dining:48,
+            family:54, family_room:54, guest_bath:56, entry:60, master:62, master_bedroom:62,
+            bedroom:64, master_bath:66, bathroom:68, closet:74, walk_in_closet:74,
+            backyard:82, patio:82, deck:84 },
+  // 218 — timecodes from frame-by-frame review (seconds)
+  '218':  { view:0, exterior:6, entry:16, living:18, great_room:18, stairs:32, dining:28,
+            kitchen:38, bedroom:56, closet:46, walk_in_closet:46, bathroom:48, master_bath:52,
+            office:54, study:54, family:68, family_room:68, backyard:70, patio:70 },
   // 1224 — timecodes set by reviewing the cinematic tour video frame-by-frame (seconds)
   '1224': { view:0, exterior:4, living:16, great_room:16, wine_cellar:22, wine:22,
             kitchen:26, dining:30, master:44, master_bedroom:44, master_bath:50,
