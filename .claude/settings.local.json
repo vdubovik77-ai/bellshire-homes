@@ -227,7 +227,9 @@
       "Bash(sed -i '' 's|https://bellshireinc.com/wp-content/uploads/2023/12/1071_interior.jpg|https://bellshireinc.com/wp-content/uploads/2023/11/web_7.jpg|g' /Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/voice-assistant/backend/properties_tour.py)",
       "Bash(sed -i '' 's|https://bellshireinc.com/wp-content/uploads/2023/12/1071_primary.jpg|https://bellshireinc.com/wp-content/uploads/2023/11/web_11-scaled.jpg|g' /Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/voice-assistant/backend/properties_tour.py)",
       "Bash(sed -i '' 's|https://bellshireinc.com/wp-content/uploads/2023/12/1071_backyard.jpg|https://bellshireinc.com/wp-content/uploads/2023/11/web_16.jpg|g' /Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/voice-assistant/backend/properties_tour.py)",
-      "Bash(sed -i '' 's|https://bellshireinc.com/wp-content/uploads/2023/12/1071_aerial.jpg|https://bellshireinc.com/wp-content/uploads/2023/11/web_22.jpg|g' /Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/voice-assistant/backend/properties_tour.py)"
+      "Bash(sed -i '' 's|https://bellshireinc.com/wp-content/uploads/2023/12/1071_aerial.jpg|https://bellshireinc.com/wp-content/uploads/2023/11/web_22.jpg|g' /Users/viacheslavdubovyk/Desktop/Desktop/BellshireHomes/voice-assistant/backend/properties_tour.py)",
+      "Bash(git commit -m 'tour: teach AI to launch Guided Tour via open_property_tour tool *)",
+      "Bash(git -c user.email=v.dubovik77@gmail.com -c 'user.name=Viacheslav Dubovyk' commit -m 'tour: teach AI to launch Guided Tour via open_property_tour tool *)"
     ]
   }
 }

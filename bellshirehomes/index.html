@@ -2517,16 +2517,32 @@ body:has(#video-modal.active) #ai-overlay-close { display:flex; }
   }
 
   .property-tour-btn {
-    width:100%; margin-top:.8rem;
-    background:linear-gradient(135deg, rgba(74,158,149,.18), rgba(74,158,149,.06));
-    border:1px solid rgba(74,158,149,.4); color:#4a9e95;
-    padding:.7rem 1rem; border-radius:10px;
-    font-family:'Outfit',sans-serif;
-    font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
-    cursor:pointer; display:flex; align-items:center; justify-content:center; gap:.5rem;
-    transition:background .2s, color .2s;
+    width:100%; margin-top:.9rem;
+    background:linear-gradient(135deg, rgba(74,158,149,.16), rgba(74,158,149,.04));
+    border:1px solid rgba(74,158,149,.45); color:#4a9e95;
+    padding:.85rem 1rem; border-radius:10px;
+    font-family:'Cormorant Garamond','Cormorant',serif;
+    font-style:italic; font-size:1.2rem; font-weight:500; letter-spacing:.02em;
+    cursor:pointer; display:flex; align-items:center; justify-content:center; gap:.55rem;
+    transition:background .25s, color .25s, transform .2s;
   }
-  .property-tour-btn:hover { background:#4a9e95; color:#fff; }
+  .property-tour-btn:hover { background:#4a9e95; color:#fff; transform:translateY(-1px); }
+  .property-tour-btn .pt-sparkle { font-style:normal; font-size:.95rem; opacity:.9; }
+
+  /* When tour is open — fade out the AI consultation panel so it doesn't overlap.
+     Voice session keeps running underneath so Alexandra can narrate. */
+  body:has(.tour-overlay.open) .ai-modal-overlay { opacity:0; pointer-events:none; transition:opacity .25s; }
+  body:has(.tour-overlay.open) .ai-float-btn { opacity:0; pointer-events:none; }
+  .tour-voice-indicator {
+    position:fixed; top:1rem; right:1rem; z-index:10001;
+    display:none; align-items:center; gap:.6rem;
+    background:rgba(15,22,26,.92); border:1px solid rgba(74,158,149,.4);
+    color:#fff; padding:.55rem .9rem; border-radius:999px;
+    font-family:'Outfit',sans-serif; font-size:.72rem; letter-spacing:.08em; text-transform:uppercase;
+    backdrop-filter:blur(10px);
+  }
+  .tour-voice-indicator.live { display:inline-flex; }
+  .tour-voice-indicator .tvi-dot { width:8px; height:8px; border-radius:50%; background:#4a9e95; animation:pulse 1.6s infinite; }
 </style>
 </head>
 <body>
@@ -5893,6 +5909,19 @@ async function aiRealtimeOpenSession(stream) {
                 properties: { property_id: { type: 'string', enum: ['312','218','1224'] } },
                 required: ['property_id']
               }
+            },
+            {
+              type: 'function',
+              name: 'open_property_tour',
+              description: 'Launches the cinematic Guided Property Tour player for a property — a full-screen scripted experience with photos, video, neighborhood map with schools/parks, and narration that YOU deliver scene by scene. Call this automatically when the user agrees to take a tour, says "yes show me", "tell me more about [property]", "give me the tour", "walk me through", or when YOU proactively offer a guided tour and the client accepts. After this call, the tour player opens and you will be asked to narrate each scene verbatim — do exactly that. Use mode="pitch" for a quick ~60s, 3-scene pitch (the default for first-time tours), or mode="tour" for the full ~4-min experience when the client wants more depth.',
+              parameters: {
+                type: 'object',
+                properties: {
+                  property_id: { type: 'string', enum: ['10425','312','218','1224','1071','1305','4920'] },
+                  mode: { type: 'string', enum: ['pitch','tour'], description: 'pitch = quick 3-scene presentation; tour = full 8-scene experience' }
+                },
+                required: ['property_id']
+              }
             }
           ]
         }
@@ -6248,6 +6277,11 @@ function aiRealtimeHandleEvent(msg) {
     case 'response.created':
       AI_RT.lastAddedAI = '';
       AI_RT.transcript = '';
+      if (typeof TOUR !== 'undefined') TOUR.responseActive = true;
+      break;
+
+    case 'response.cancelled':
+      if (typeof TOUR !== 'undefined') TOUR.responseActive = false;
       break;
 
     // AI transcript streaming (chunks)
@@ -6304,6 +6338,7 @@ function aiRealtimeHandleEvent(msg) {
 
     // Response fully complete — last chance fallback
     case 'response.done':
+      if (typeof TOUR !== 'undefined') TOUR.responseActive = false;
       aiRtAddAssistantMessage(AI_RT.transcript);
       // Also check the response object for output
       if (msg.response && Array.isArray(msg.response.output)) {
@@ -6534,6 +6569,26 @@ function aiExecuteAction(name, args) {
       setTimeout(function() { openProjectGallery(args.property_id); }, 300);
     }
     return { ok: true, property: args.property_id };
+  }
+
+  if (name === 'open_property_tour') {
+    if (typeof openTour === 'function') {
+      var mode = (args.mode === 'tour') ? 'tour' : 'pitch';
+      // Mark voice as auto-opened-by-tour so it gets quieted when tour closes
+      TOUR.voiceAutoOpened = false; // Alexandra is already on the call
+      setTimeout(function() {
+        openTour(args.property_id, mode);
+        // Auto-enable narration so Alexandra delivers each scene
+        setTimeout(function(){
+          if (!TOUR.autoNarrate) {
+            var b = document.getElementById('tour-narrate');
+            if (b) b.click();
+          }
+        }, 1200);
+      }, 250);
+      return { ok: true, property: args.property_id, mode: mode };
+    }
+    return { ok: false, reason: 'tour player unavailable' };
   }
 
   if (name === 'play_video') {
@@ -7051,13 +7106,18 @@ function aiVpScrollTo(propId) {
     </div>
     <div class="tour-map" id="tour-map"></div>
   </div>
+  <div class="tour-voice-indicator" id="tour-voice-indicator">
+    <span class="tvi-dot"></span>Alexandra is narrating
+  </div>
 </div>
 
 <script>
 // ═══════════════════════════════════════════
 //  GUIDED PROPERTY TOUR PLAYER
 // ═══════════════════════════════════════════
-var TOUR = { propertyId:null, mode:'pitch', data:null, idx:0, autoNarrate:false, map:null, markers:[] };
+var TOUR = { propertyId:null, mode:'pitch', data:null, idx:0, autoNarrate:false,
+             map:null, markers:[], pendingAlexandra:false, voiceAutoOpened:false,
+             responseActive:false, sceneToken:0 };
 
 async function openTour(propertyId, mode) {
   event && event.stopPropagation && event.stopPropagation();
@@ -7091,7 +7151,15 @@ function closeTour() {
   document.getElementById('tour-overlay').classList.remove('open');
   document.body.style.overflow = '';
   TOUR.autoNarrate = false;
+  TOUR.sceneToken++; // invalidate any in-flight narration
+  var ind = document.getElementById('tour-voice-indicator');
+  if (ind) ind.classList.remove('live');
   if (window.speechSynthesis) window.speechSynthesis.cancel();
+  // If we auto-opened Alexandra for this tour, cancel any active response so she goes quiet
+  if (TOUR.voiceAutoOpened && typeof AI_RT !== 'undefined' && AI_RT && AI_RT.dc && AI_RT.dc.readyState === 'open') {
+    try { AI_RT.dc.send(JSON.stringify({ type: 'response.cancel' })); } catch(e){}
+  }
+  TOUR.voiceAutoOpened = false;
   var v = document.querySelector('#tour-media video');
   if (v) try { v.pause(); } catch(e){}
 }
@@ -7141,11 +7209,49 @@ function tourToggleNarrate() {
   var btn = document.getElementById('tour-narrate');
   btn.textContent = TOUR.autoNarrate ? '⏸ Pause narration' : '🔊 Auto-narrate';
   btn.classList.toggle('primary', TOUR.autoNarrate);
-  if (TOUR.autoNarrate) {
-    tourSpeak(TOUR.data.scenes[TOUR.idx].text);
-  } else if (window.speechSynthesis) {
-    window.speechSynthesis.cancel();
+  if (!TOUR.autoNarrate) {
+    TOUR.sceneToken++; // stop in-flight chunks
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    if (typeof AI_RT !== 'undefined' && AI_RT && AI_RT.dc && AI_RT.dc.readyState === 'open' && TOUR.responseActive) {
+      try { AI_RT.dc.send(JSON.stringify({ type: 'response.cancel' })); } catch(e){}
+    }
+    var ind = document.getElementById('tour-voice-indicator');
+    if (ind) ind.classList.remove('live');
+    return;
   }
+  // If Alexandra isn't connected yet, auto-open her in the background
+  if (!tourAlexandraAvailable()) {
+    tourEnsureAlexandra(function(){
+      if (TOUR.autoNarrate) tourSpeak(TOUR.data.scenes[TOUR.idx].text);
+    });
+    return;
+  }
+  tourSpeak(TOUR.data.scenes[TOUR.idx].text);
+}
+
+// Auto-open the AI Consultation voice mode silently so Alexandra can narrate the tour.
+// onReady fires when the data channel is open. If voice fails, falls back to browser TTS.
+function tourEnsureAlexandra(onReady) {
+  if (tourAlexandraAvailable()) { onReady && onReady(); return; }
+  // No realtime helpers — fall through to browser TTS
+  if (typeof AI_RT === 'undefined' || typeof aiOpenVoiceMode !== 'function') {
+    onReady && onReady(); return;
+  }
+  TOUR.voiceAutoOpened = true;
+  try { aiOpenVoiceMode(); } catch(e) { onReady && onReady(); return; }
+  // Poll for the data channel to open (max ~12s)
+  var tries = 0;
+  var iv = setInterval(function(){
+    tries++;
+    if (tourAlexandraAvailable()) {
+      clearInterval(iv);
+      // Give the session.update tools message ~600ms to settle, then narrate
+      setTimeout(function(){ onReady && onReady(); }, 600);
+    } else if (tries > 60) {
+      clearInterval(iv);
+      onReady && onReady(); // give up — tourSpeak will use browser TTS
+    }
+  }, 200);
 }
 
 function tourPickVoice() {
@@ -7170,27 +7276,42 @@ function tourAlexandraAvailable() {
 
 function tourSpeakViaAlexandra(text) {
   if (!tourAlexandraAvailable()) return false;
-  AI_RT.dc.send(JSON.stringify({
-    type: 'conversation.item.create',
-    item: { type: 'message', role: 'system',
-            content: [{ type: 'input_text',
-                        text: 'TOUR NARRATION — read the following aloud verbatim, warm and unhurried. '
-                            + 'Do not add intro/outro and do not say anything else. Text:\n\n' + text }] }
-  }));
-  AI_RT.dc.send(JSON.stringify({ type: 'response.create' }));
-  var done = false;
+  var ind = document.getElementById('tour-voice-indicator');
+  if (ind) ind.classList.add('live');
+  var myToken = ++TOUR.sceneToken;
+  // If a prior response is mid-flight (greeting or previous scene), cancel it first
+  function send() {
+    AI_RT.dc.send(JSON.stringify({
+      type: 'conversation.item.create',
+      item: { type: 'message', role: 'system',
+              content: [{ type: 'input_text',
+                          text: 'TOUR NARRATION MODE — read the following text aloud verbatim, warm and unhurried, '
+                              + 'like a luxury-home concierge. Do NOT add introductions, comments, or anything else. '
+                              + 'Just read the text:\n\n' + text }] }
+    }));
+    AI_RT.dc.send(JSON.stringify({ type: 'response.create' }));
+    TOUR.responseActive = true;
+  }
+  if (TOUR.responseActive) {
+    try { AI_RT.dc.send(JSON.stringify({ type: 'response.cancel' })); } catch(e){}
+    setTimeout(send, 250);
+  } else {
+    send();
+  }
   function onMsg(e) {
     try {
       var msg = JSON.parse(e.data);
-      if (!done && msg && msg.type === 'response.done') {
-        done = true;
+      if (msg && (msg.type === 'response.done' || msg.type === 'response.cancelled')) {
         AI_RT.dc.removeEventListener('message', onMsg);
+        TOUR.responseActive = false;
+        if (myToken !== TOUR.sceneToken) return; // a newer scene took over
         if (TOUR.autoNarrate && TOUR.idx < TOUR.data.scenes.length - 1) {
-          setTimeout(function(){ if (TOUR.autoNarrate) tourNext(); }, 1000);
+          setTimeout(function(){ if (TOUR.autoNarrate && myToken === TOUR.sceneToken - 0) tourNext(); }, 900);
         } else if (TOUR.autoNarrate) {
           TOUR.autoNarrate = false;
           var btn = document.getElementById('tour-narrate');
-          btn.textContent = '🔊 Auto-narrate'; btn.classList.add('primary');
+          if (btn) { btn.textContent = '🔊 Auto-narrate'; btn.classList.add('primary'); }
+          if (ind) ind.classList.remove('live');
         }
       }
     } catch(_) {}
@@ -7203,17 +7324,19 @@ function tourSpeak(text) {
   if (tourSpeakViaAlexandra(text)) return;
   if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
+  var myToken = ++TOUR.sceneToken;
   var chunks = (text || '').match(/[^.!?]+[.!?]+\s*/g) || [text];
   var i = 0;
   var v = tourPickVoice();
   function speakNext() {
+    if (myToken !== TOUR.sceneToken) return; // scene changed under us
     if (!TOUR.autoNarrate || i >= chunks.length) {
       if (TOUR.autoNarrate && TOUR.idx < TOUR.data.scenes.length - 1) {
-        setTimeout(function(){ if (TOUR.autoNarrate) tourNext(); }, 900);
+        setTimeout(function(){ if (TOUR.autoNarrate && myToken === TOUR.sceneToken) tourNext(); }, 900);
       } else if (TOUR.autoNarrate) {
         TOUR.autoNarrate = false;
         var btn = document.getElementById('tour-narrate');
-        btn.textContent = '🔊 Auto-narrate'; btn.classList.add('primary');
+        if (btn) { btn.textContent = '🔊 Auto-narrate'; btn.classList.add('primary'); }
       }
       return;
     }
@@ -7229,10 +7352,18 @@ function tourSpeak(text) {
 
 function tourUpdateMap(mapData) {
   var el = document.getElementById('tour-map');
+  if (!el || typeof L === 'undefined') return;
+  var center = mapData.center || [0, 0];
+  var zoom = mapData.zoom || 14;
   if (!TOUR.map) {
-    TOUR.map = L.map(el, { zoomControl: true, scrollWheelZoom: false, attributionControl: false });
+    // Pre-set the view BEFORE adding tiles so Leaflet knows where to render the first batch
+    TOUR.map = L.map(el, {
+      zoomControl: true, scrollWheelZoom: false, attributionControl: false,
+      center: center, zoom: zoom
+    });
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
-      maxZoom: 19, detectRetina: false, tileSize: 256
+      maxZoom: 19, subdomains: 'abcd', tileSize: 256,
+      crossOrigin: true
     }).addTo(TOUR.map);
   }
   TOUR.markers.forEach(function(m){ TOUR.map.removeLayer(m); });
@@ -7242,14 +7373,22 @@ function tourUpdateMap(mapData) {
     var icon = L.divIcon({
       className: '',
       html: '<div class="tour-marker-pin ' + kindClass + '">' + mk.label + '</div>',
-      iconSize: [null, null], iconAnchor: [10, 0]
+      iconAnchor: [10, 0]
     });
     var marker = L.marker([mk.lat, mk.lng], { icon: icon }).addTo(TOUR.map);
     TOUR.markers.push(marker);
   });
-  var center = mapData.center || [0, 0];
-  var zoom = mapData.zoom || 14;
-  setTimeout(function(){ TOUR.map.invalidateSize(); TOUR.map.flyTo(center, zoom, { duration: 1.2 }); }, 80);
+  // Wait for layout + animation to settle, then resize and pan. Without this the
+  // grid area can still be 0×0 px on first open, so tiles never request.
+  function settle(attempt) {
+    if (!TOUR.map) return;
+    TOUR.map.invalidateSize(true);
+    var size = TOUR.map.getSize();
+    if (size.x < 50 && attempt < 12) { setTimeout(function(){ settle(attempt + 1); }, 120); return; }
+    try { TOUR.map.flyTo(center, zoom, { duration: 1.1 }); }
+    catch(e) { TOUR.map.setView(center, zoom); }
+  }
+  setTimeout(function(){ settle(0); }, 200);
 }
 
 document.addEventListener('keydown', function(e){
@@ -7268,7 +7407,7 @@ document.addEventListener('keydown', function(e){
       if (!body) return;
       var btn = document.createElement('button');
       btn.className = 'property-tour-btn';
-      btn.innerHTML = '✨ Take a Guided Tour';
+      btn.innerHTML = '<span class="pt-sparkle">✦</span> Take a Guided Tour';
       btn.onclick = function(e) { e.stopPropagation(); openTour(pid, 'pitch'); };
       body.appendChild(btn);
     });
