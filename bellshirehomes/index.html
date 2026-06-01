@@ -328,7 +328,7 @@
     margin-top: -2px;
   }
   .nav-links {
-    display: flex; gap: 2.5rem; align-items: center;
+    display: flex; gap: clamp(0.85rem, 1.9vw, 2.5rem); align-items: center;
     list-style: none;
   }
   .nav-links a {
@@ -1978,6 +1978,9 @@
   nav { transition: padding .42s cubic-bezier(.4,0,.2,1), all .5s ease; }
   body:has(.ai-modal-overlay.open) nav,
   body:has(.ai-voice-overlay.open) nav { padding-right: calc(var(--ai-panel-w) + 4%); }
+  /* With the panel open the bar is narrower, so tighten the label spacing too */
+  body:has(.ai-modal-overlay.open) .nav-links,
+  body:has(.ai-voice-overlay.open) .nav-links { gap: clamp(0.6rem, 1.15vw, 1.5rem); }
   body:has(.tour-overlay.open) { margin-right: 0 !important; }
   body:has(.tour-overlay.open) nav { padding-right: 4% !important; }
 }
@@ -2189,10 +2192,11 @@
    (it would otherwise overlap the panel's input field) — all screen sizes */
 body:has(.ai-modal-overlay.open) .ai-float-btn,
 body:has(.ai-voice-overlay.open) .ai-float-btn { display: none !important; }
-/* Hide the nav "Schedule Tour" CTA while a panel is open — it's redundant (the
-   panel IS the consultation) and would otherwise sit cramped against the panel. */
-body:has(.ai-modal-overlay.open) .nav-cta,
-body:has(.ai-voice-overlay.open) .nav-cta { opacity: 0 !important; pointer-events: none !important; }
+/* Remove the nav "Schedule Tour" CTA (and its list slot) while a panel is open —
+   it's redundant (the panel IS the consultation) and freeing its width keeps the
+   remaining menu items from being cramped against the panel. */
+body:has(.ai-modal-overlay.open) .nav-links li:has(.nav-cta),
+body:has(.ai-voice-overlay.open) .nav-links li:has(.nav-cta) { display: none !important; }
 .ai-float-dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,.9); animation:pulse 2s infinite; }
 
 /* Success overlay inside modal */
