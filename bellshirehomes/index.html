@@ -1973,10 +1973,13 @@
   body { transition: margin-right .42s cubic-bezier(.4,0,.2,1); }
   body:has(.ai-modal-overlay.open),
   body:has(.ai-voice-overlay.open) { margin-right: var(--ai-panel-w); }
+  /* The header BAR stays full-width and runs UNDER the panel (layered feel) — we
+     only pad its content so the menu items stay in the visible area, not hidden. */
+  nav { transition: padding .42s cubic-bezier(.4,0,.2,1), all .5s ease; }
   body:has(.ai-modal-overlay.open) nav,
-  body:has(.ai-voice-overlay.open) nav { right: var(--ai-panel-w); }
+  body:has(.ai-voice-overlay.open) nav { padding-right: calc(var(--ai-panel-w) + 4%); }
   body:has(.tour-overlay.open) { margin-right: 0 !important; }
-  body:has(.tour-overlay.open) nav { right: 0 !important; }
+  body:has(.tour-overlay.open) nav { padding-right: 4% !important; }
 }
 
 .ai-modal {
