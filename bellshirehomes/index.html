@@ -8574,6 +8574,7 @@ function tourUpdateMap(mapData) {
   TOUR.markers.forEach(function(m){ TOUR.map.removeLayer(m); });
   TOUR.markers = [];
   var TOUR_MK_ICON = { school:'🎓', park:'🌳', shop:'🛒', home:'📍' };
+  var pts = [];
   (mapData.markers || []).forEach(function(mk){
     var kind = (mk.kind === 'school' || mk.kind === 'park' || mk.kind === 'shop') ? mk.kind : 'home';
     var ic = TOUR_MK_ICON[kind] || '📍';
@@ -8588,14 +8589,26 @@ function tourUpdateMap(mapData) {
     });
     var marker = L.marker([mk.lat, mk.lng], { icon: icon, riseOnHover: true }).addTo(TOUR.map);
     TOUR.markers.push(marker);
+    pts.push([mk.lat, mk.lng]);
   });
   function settle(attempt) {
     if (!TOUR.map) return;
     TOUR.map.invalidateSize(true);
     var size = TOUR.map.getSize();
     if (size.x < 50 && attempt < 12) { setTimeout(function(){ settle(attempt + 1); }, 120); return; }
-    try { TOUR.map.flyTo(center, zoom, { duration: 1.1 }); }
-    catch(e) { TOUR.map.setView(center, zoom); }
+    // Frame ALL markers so each one is visible and correctly placed. With a single
+    // marker (home-only scenes) just center on it.
+    try {
+      if (pts.length >= 2) {
+        TOUR.map.fitBounds(L.latLngBounds(pts), { padding: [55, 55], maxZoom: 16, animate: true, duration: 1.0 });
+      } else if (pts.length === 1) {
+        TOUR.map.flyTo(pts[0], zoom, { duration: 1.1 });
+      } else {
+        TOUR.map.flyTo(center, zoom, { duration: 1.1 });
+      }
+    } catch(e) {
+      TOUR.map.setView(pts[0] || center, zoom);
+    }
   }
   setTimeout(function(){ settle(0); }, 200);
 }
