@@ -7641,6 +7641,7 @@ function tourUpdateMap(mapData) {
   TOUR.markers.forEach(function(m){ TOUR.map.removeLayer(m); });
   TOUR.markers = [];
   var TOUR_MK_ICON = { school:'🎓', park:'🌳', shop:'🛒', home:'📍' };
+  var pts = [];
   (mapData.markers || []).forEach(function(mk){
     var kind = (mk.kind === 'school' || mk.kind === 'park' || mk.kind === 'shop') ? mk.kind : 'home';
     var ic = TOUR_MK_ICON[kind] || '📍';
@@ -7654,16 +7655,26 @@ function tourUpdateMap(mapData) {
     });
     var marker = L.marker([mk.lat, mk.lng], { icon: icon, riseOnHover: true }).addTo(TOUR.map);
     TOUR.markers.push(marker);
+    pts.push([mk.lat, mk.lng]);
   });
-  // Wait for layout + animation to settle, then resize and pan. Without this the
-  // grid area can still be 0×0 px on first open, so tiles never request.
+  // Wait for layout + animation to settle, then frame ALL markers so each is
+  // visible and correctly placed (single marker → just center on it).
   function settle(attempt) {
     if (!TOUR.map) return;
     TOUR.map.invalidateSize(true);
     var size = TOUR.map.getSize();
     if (size.x < 50 && attempt < 12) { setTimeout(function(){ settle(attempt + 1); }, 120); return; }
-    try { TOUR.map.flyTo(center, zoom, { duration: 1.1 }); }
-    catch(e) { TOUR.map.setView(center, zoom); }
+    try {
+      if (pts.length >= 2) {
+        TOUR.map.fitBounds(L.latLngBounds(pts), { padding: [55, 55], maxZoom: 16, animate: true, duration: 1.0 });
+      } else if (pts.length === 1) {
+        TOUR.map.flyTo(pts[0], zoom, { duration: 1.1 });
+      } else {
+        TOUR.map.flyTo(center, zoom, { duration: 1.1 });
+      }
+    } catch(e) {
+      TOUR.map.setView(pts[0] || center, zoom);
+    }
   }
   setTimeout(function(){ settle(0); }, 200);
 }

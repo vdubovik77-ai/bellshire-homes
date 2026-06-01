@@ -236,7 +236,8 @@
       "Bash(awk '/\\\\.video-modal \\\\{/,/^  \\\\}/' index.html)",
       "Bash(node -e \"const h=require\\('fs'\\).readFileSync\\('index.html','utf8'\\); const m=[...h.matchAll\\(/<script>\\([\\\\s\\\\S]*?\\)<\\\\/script>/g\\)]; let e=0; m.forEach\\(\\(s,i\\)=>{try{new Function\\(s[1]\\);}catch\\(x\\){e++;console.log\\('MAIN#'+i+': '+x.message\\);}}\\); console.log\\('MAIN errors:',e\\);\")",
       "Bash(node -e \"const h=require\\('fs'\\).readFileSync\\('index.html','utf8'\\); const m=[...h.matchAll\\(/<script>\\([\\\\s\\\\S]*?\\)<\\\\/script>/g\\)]; let e=0; m.forEach\\(\\(s,i\\)=>{try{new Function\\(s[1]\\);}catch\\(x\\){e++;console.log\\('FONTS#'+i+': '+x.message\\);}}\\); console.log\\('FONTS errors:',e\\);\")",
-      "Bash(perl -0pi -e 's/\\\\$3,500,000/\\\\$3,158,000/g' index.html)"
+      "Bash(perl -0pi -e 's/\\\\$3,500,000/\\\\$3,158,000/g' index.html)",
+      "WebFetch(domain:nominatim.openstreetmap.org)"
     ]
   }
 }
