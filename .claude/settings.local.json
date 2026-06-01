@@ -232,7 +232,10 @@
       "Bash(git -c user.email=v.dubovik77@gmail.com -c 'user.name=Viacheslav Dubovyk' commit -m 'tour: teach AI to launch Guided Tour via open_property_tour tool *)",
       "Bash(awk 'NR>=1670 && NR<=1685 && /@media|nav-links|max-width/' index.html)",
       "WebFetch(domain:www.greatschools.org)",
-      "Bash(node -e \"const h=require\\('fs'\\).readFileSync\\('index.html','utf8'\\); const m=[...h.matchAll\\(/<script>\\([\\\\s\\\\S]*?\\)<\\\\/script>/g\\)]; let errs=0; m.forEach\\(\\(s,i\\)=>{try{new Function\\(s[1]\\);}catch\\(e\\){errs++;console.log\\('FONTS script#'+i+': '+e.message\\);}}\\); console.log\\('FONTS script blocks:',m.length,'errors:',errs\\);\")"
+      "Bash(node -e \"const h=require\\('fs'\\).readFileSync\\('index.html','utf8'\\); const m=[...h.matchAll\\(/<script>\\([\\\\s\\\\S]*?\\)<\\\\/script>/g\\)]; let errs=0; m.forEach\\(\\(s,i\\)=>{try{new Function\\(s[1]\\);}catch\\(e\\){errs++;console.log\\('FONTS script#'+i+': '+e.message\\);}}\\); console.log\\('FONTS script blocks:',m.length,'errors:',errs\\);\")",
+      "Bash(awk '/\\\\.video-modal \\\\{/,/^  \\\\}/' index.html)",
+      "Bash(node -e \"const h=require\\('fs'\\).readFileSync\\('index.html','utf8'\\); const m=[...h.matchAll\\(/<script>\\([\\\\s\\\\S]*?\\)<\\\\/script>/g\\)]; let e=0; m.forEach\\(\\(s,i\\)=>{try{new Function\\(s[1]\\);}catch\\(x\\){e++;console.log\\('MAIN#'+i+': '+x.message\\);}}\\); console.log\\('MAIN errors:',e\\);\")",
+      "Bash(node -e \"const h=require\\('fs'\\).readFileSync\\('index.html','utf8'\\); const m=[...h.matchAll\\(/<script>\\([\\\\s\\\\S]*?\\)<\\\\/script>/g\\)]; let e=0; m.forEach\\(\\(s,i\\)=>{try{new Function\\(s[1]\\);}catch\\(x\\){e++;console.log\\('FONTS#'+i+': '+x.message\\);}}\\); console.log\\('FONTS errors:',e\\);\")"
     ]
   }
 }
