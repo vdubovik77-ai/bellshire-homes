@@ -2785,16 +2785,17 @@ body:has(#video-modal.active) #ai-overlay-close { display:flex; }
   /* Tour CTA button on property cards */
   .property-tour-btn {
     width:100%; margin-top:.9rem;
-    background:linear-gradient(135deg, rgba(74,158,149,.16), rgba(74,158,149,.04));
-    border:1px solid rgba(74,158,149,.45); color:#4a9e95;
-    padding:.9rem 1rem; border-radius:10px;
-    font-family:'Butler','Cormorant Garamond',serif;
-    font-style:italic; font-size:1.25rem; font-weight:500; letter-spacing:.02em;
+    background:transparent;
+    border:1px solid var(--teal); color:var(--teal);
+    padding:.85rem 1rem; border-radius:10px;
+    font-family:'General Sans','Inter',sans-serif;
+    font-style:normal; font-weight:400; font-size:.75rem;
+    letter-spacing:.15em; text-transform:uppercase;
     cursor:pointer; display:flex; align-items:center; justify-content:center; gap:.55rem;
-    transition:background .25s, color .25s, transform .2s;
+    transition:all .3s ease;
   }
-  .property-tour-btn:hover { background:#4a9e95; color:#fff; transform:translateY(-1px); }
-  .property-tour-btn .pt-sparkle { font-style:normal; font-size:.95rem; opacity:.9; }
+  .property-tour-btn:hover { background:var(--teal); color:#fff; }
+  .property-tour-btn .pt-sparkle { font-size:.85rem; opacity:.9; }
 
   body:has(.tour-overlay.open) .ai-modal-overlay { opacity:0; pointer-events:none; transition:opacity .25s; }
   body:has(.tour-overlay.open) .ai-float-btn { opacity:0; pointer-events:none; }
