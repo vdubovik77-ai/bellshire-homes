@@ -2778,19 +2778,31 @@ body:has(#video-modal.active) #ai-overlay-close { display:flex; }
      12×12 box, which was clipping the address text — making it unreadable). */
   .tour-map .leaflet-marker-icon { width:auto !important; height:auto !important; background:transparent !important; border:0 !important; }
   .tour-marker-pin {
+    position:relative;
     display:inline-flex; align-items:center; gap:.34rem;
     background:#C9A96E; color:#15202a; padding:.36rem .62rem; border-radius:9px;
     font-size:.72rem; font-weight:700; white-space:nowrap; line-height:1;
     border:1.5px solid rgba(255,255,255,.9);
     box-shadow:0 4px 14px rgba(0,0,0,.55);
-    transform:translateY(-100%); transform-origin:0 100%;
+    transform:translateY(-100%); transform-origin:24px 100%;
     transition:transform .25s ease, box-shadow .25s ease;
+  }
+  /* Callout tail — a small triangle pointing down at the exact map location */
+  .tour-marker-pin::after {
+    content:''; position:absolute; top:100%; left:16px;
+    width:0; height:0; border:8px solid transparent; border-bottom:0;
+    border-top-color:#C9A96E;
+    filter:drop-shadow(0 2px 1px rgba(0,0,0,.35));
   }
   .tour-marker-pin .mk-ic { font-size:.82rem; line-height:1; }
   .tour-marker-pin.school { background:#3fa093; color:#fff; }
+  .tour-marker-pin.school::after { border-top-color:#3fa093; }
   .tour-marker-pin.park   { background:#6faE63; color:#fff; }
+  .tour-marker-pin.park::after   { border-top-color:#6faE63; }
   .tour-marker-pin.shop   { background:#d98b4a; color:#fff; }
+  .tour-marker-pin.shop::after   { border-top-color:#d98b4a; }
   .tour-marker-pin.home   { background:#C9A96E; color:#15202a; }
+  .tour-marker-pin.home::after   { border-top-color:#C9A96E; }
   /* The object Alexandra is currently talking about — enlarged + glowing */
   .tour-marker-pin.hl {
     transform:translateY(-100%) scale(1.22); z-index:650;
@@ -8559,7 +8571,7 @@ function tourUpdateMap(mapData) {
     var icon = L.divIcon({
       className: '',
       html: '<div class="tour-marker-pin ' + kind + hl + '"><span class="mk-ic">' + ic + '</span>' + label + '</div>',
-      iconAnchor: [12, 0]
+      iconAnchor: [24, 8]   // tip of the callout tail sits on the exact point
     });
     var marker = L.marker([mk.lat, mk.lng], { icon: icon, riseOnHover: true }).addTo(TOUR.map);
     TOUR.markers.push(marker);
