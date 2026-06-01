@@ -2055,7 +2055,7 @@
   animation: aiSpeakRing 1.2s ease infinite;
 }
 @keyframes aiSpeakRing { 0%,100%{transform:scale(1);opacity:.6} 50%{transform:scale(1.08);opacity:.2} }
-.ai-name { font-family:'Butler','Cormorant Garamond',serif; font-size:1.1rem; font-weight:300; }
+.ai-name { font-family:'Butler','Cormorant Garamond',serif; font-size:1.25rem; font-weight:600; color:#fff; letter-spacing:.01em; }
 .ai-title { font-size:.65rem; letter-spacing:.12em; text-transform:uppercase; color:#4a9e95; }
 .ai-status { font-size:.72rem; color:rgba(255,255,255,.35); display:flex; align-items:center; gap:.35rem; margin-top:.2rem; }
 .ai-dot { width:6px; height:6px; border-radius:50%; background:#4ade80; }
@@ -2365,6 +2365,17 @@ body:has(.ai-voice-overlay.open) .nav-links li:has(.nav-cta) { display: none !im
 
 /* ── Avatar ── */
 .ai-voice-avatar-wrap { position:relative; }
+.ai-voice-name {
+  text-align:center; margin-top:.7rem;
+  font-family:'Butler','Cormorant Garamond',serif;
+  font-size:1.5rem; font-weight:600; color:#fff; letter-spacing:.01em; line-height:1.1;
+}
+.ai-voice-role {
+  text-align:center; margin-top:.25rem; margin-bottom:.2rem;
+  font-family:'General Sans','Inter',sans-serif;
+  font-size:.62rem; letter-spacing:.16em; text-transform:uppercase;
+  color:rgba(255,255,255,.5);
+}
 .ai-voice-ring {
   width:130px; height:130px; border-radius:50%;
   overflow:hidden;
@@ -7986,6 +7997,8 @@ function aiVpScrollTo(propId) {
         <img src="images/alexandra.png" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1580489944761-15a19d654956?w=360&h=360&fit=crop&crop=face'" alt="Alexandra">
       </div>
     </div>
+    <div class="ai-voice-name">Alexandra</div>
+    <div class="ai-voice-role">Senior Consultant · Bellshire Homes</div>
 
     <!-- Voice selector (locked while session active) -->
     <div class="ai-voice-selector" id="ai-voice-selector">
