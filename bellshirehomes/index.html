@@ -149,7 +149,9 @@
     text-transform: uppercase;
     transition: color 0.3s;
     position: relative;
+    white-space: nowrap;
   }
+  .nav-links li { flex: 0 0 auto; }
   .nav-links a::after {
     content: '';
     position: absolute; bottom: -4px; left: 0;
@@ -1993,6 +1995,10 @@
    (it would otherwise overlap the panel's input field) — all screen sizes */
 body:has(.ai-modal-overlay.open) .ai-float-btn,
 body:has(.ai-voice-overlay.open) .ai-float-btn { display: none !important; }
+/* Hide the nav "Schedule Tour" CTA while a panel is open — it's redundant (the
+   panel IS the consultation) and would otherwise sit cramped against the panel. */
+body:has(.ai-modal-overlay.open) .nav-cta,
+body:has(.ai-voice-overlay.open) .nav-cta { opacity: 0 !important; pointer-events: none !important; }
 .ai-float-dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,.9); animation:pulse 2s infinite; }
 
 /* Success overlay inside modal */
