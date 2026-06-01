@@ -1961,6 +1961,22 @@
 .ai-modal-overlay.open .ai-modal { animation: aiModalIn 0.4s cubic-bezier(.4,0,.2,1); }
 @keyframes aiModalIn { from{opacity:0;transform:translateX(100%)} to{opacity:1;transform:translateX(0)} }
 
+/* ── PUSH / SQUEEZE LAYOUT (desktop) ──────────────────────────────────
+   When the chat OR voice panel opens, shrink the page content by the panel
+   width so nothing the assistant shows is ever hidden behind the panel. */
+:root { --ai-panel-w: 420px; }
+/* Dock only when there's comfortable room (≥1024px). Below that the panel
+   floats as an overlay / bottom-sheet, the better pattern on small screens. */
+@media (min-width: 1024px) {
+  body { transition: margin-right .42s cubic-bezier(.4,0,.2,1); }
+  body:has(.ai-modal-overlay.open),
+  body:has(.ai-voice-overlay.open) { margin-right: var(--ai-panel-w); }
+  body:has(.ai-modal-overlay.open) nav,
+  body:has(.ai-voice-overlay.open) nav { right: var(--ai-panel-w); }
+  body:has(.tour-overlay.open) { margin-right: 0 !important; }
+  body:has(.tour-overlay.open) nav { right: 0 !important; }
+}
+
 .ai-modal {
   pointer-events: all;
   background: #0d0d0d; border-radius: 20px 0 0 20px;
