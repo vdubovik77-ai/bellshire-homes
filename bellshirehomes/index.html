@@ -2502,6 +2502,8 @@ body:has(#video-modal.active) #ai-overlay-close { display:flex; }
   .tour-ctrl-btn.primary:hover { background:#3d8a82; }
   .tour-ctrl-btn.primary svg { width:24px; height:24px; }
   .tour-ctrl-btn[disabled] { opacity:.3; cursor:not-allowed; }
+  /* Flash when Alexandra "presses" a control herself */
+  .tour-ctrl-btn.pressed { background:#4a9e95; border-color:#4a9e95; color:#fff; transform:scale(1.12); box-shadow:0 0 0 4px rgba(74,158,149,.3); }
 
   .tour-media { grid-area:media; position:relative; border-radius:18px; overflow:hidden; background:#1a1a1a; min-height:380px; }
   .tour-media img, .tour-media video { width:100%; height:100%; object-fit:cover; display:block; }
@@ -6041,6 +6043,18 @@ async function aiRealtimeOpenSession(stream) {
               name: 'close_property_tour',
               description: 'Closes the Guided Property Tour player and returns to the normal consultation. Call this when the user says they have seen enough, says "that\'s enough", "stop the tour", "close the tour", "досить", "вистачить", "заверши тур", or asks to go back / move on. After closing, continue the conversation normally.',
               parameters: { type: 'object', properties: {}, required: [] }
+            },
+            {
+              type: 'function',
+              name: 'tour_next_scene',
+              description: 'Advances the open Guided Tour to the NEXT scene — switching its photo/video and map. Call this yourself, while presenting a tour, the moment you finish narrating the current scene so the visuals follow your presentation. Also call it if the client says "next", "go on", "далі", "наступне".',
+              parameters: { type: 'object', properties: {}, required: [] }
+            },
+            {
+              type: 'function',
+              name: 'tour_prev_scene',
+              description: 'Goes back to the PREVIOUS scene of the open Guided Tour (switching photo/video and map). Call when the client asks to go back, repeat, or "назад".',
+              parameters: { type: 'object', properties: {}, required: [] }
             }
           ]
         }
@@ -6716,6 +6730,21 @@ function aiExecuteAction(name, args) {
     return { ok: true, closed: false, note: 'no tour was open' };
   }
 
+  if (name === 'tour_next_scene' || name === 'tour_prev_scene') {
+    var tOpen = document.getElementById('tour-overlay') && document.getElementById('tour-overlay').classList.contains('open');
+    if (!tOpen || !TOUR.data) return { ok: false, reason: 'no tour is open' };
+    var last = TOUR.data.scenes.length - 1;
+    if (name === 'tour_next_scene') {
+      if (TOUR.idx >= last) return { ok: true, atEnd: true, note: 'This was the final scene — wrap up the tour or invite questions.' };
+      tourNext();
+      return { ok: true, scene: TOUR.idx + 1, of: TOUR.data.scenes.length, title: TOUR.data.scenes[TOUR.idx].title };
+    } else {
+      if (TOUR.idx <= 0) return { ok: true, atStart: true };
+      tourPrev();
+      return { ok: true, scene: TOUR.idx + 1, of: TOUR.data.scenes.length, title: TOUR.data.scenes[TOUR.idx].title };
+    }
+  }
+
   if (name === 'play_video') {
     var mv = AI_PROPERTY_MEDIA[args.property_id];
     if (mv && mv.video) {
@@ -7372,9 +7401,13 @@ function tourShowScene(idx) {
       + '<video src="' + media.url + '" autoplay muted loop playsinline></video>'
       + (caption ? '<div class="tour-media-caption">' + caption + '</div>' : '');
   } else {
+    // Tours show ONLY real photos of this property. If a real photo fails to load,
+    // fall back to another REAL photo of the SAME property — never a generic stock image.
+    var realFallback = (data.scenes[0] && data.scenes[0].media && data.scenes[0].media.url) || media.url;
+    var fb = realFallback.replace(/'/g, "\\'");
     mediaEl.innerHTML =
       '<div class="tour-mini-meta">Scene ' + (idx+1) + '</div>'
-      + '<img src="' + media.url + '" alt="' + caption + '" onerror="this.onerror=null;this.src=\'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&h=800&fit=crop\';this.style.opacity=.7">'
+      + '<img src="' + media.url + '" alt="' + caption + '" onerror="this.onerror=null;this.src=\'' + fb + '\'">'
       + (caption ? '<div class="tour-media-caption">' + caption + '</div>' : '');
   }
   var mapData = scene.map || {
@@ -7387,8 +7420,15 @@ function tourShowScene(idx) {
   if (TOUR.autoNarrate) tourSpeak(scene.text);
 }
 
-function tourPrev() { tourShowScene(TOUR.idx - 1); }
-function tourNext() { tourShowScene(TOUR.idx + 1); }
+// Briefly flash a control button so it's clear Alexandra is "pressing" it
+function tourFlashBtn(id) {
+  var b = document.getElementById(id);
+  if (!b) return;
+  b.classList.add('pressed');
+  setTimeout(function(){ b.classList.remove('pressed'); }, 450);
+}
+function tourPrev() { tourFlashBtn('tour-prev'); tourShowScene(TOUR.idx - 1); }
+function tourNext() { tourFlashBtn('tour-next'); tourShowScene(TOUR.idx + 1); }
 
 function tourToggleNarrate() {
   TOUR.autoNarrate = !TOUR.autoNarrate;
