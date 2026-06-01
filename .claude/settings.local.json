@@ -238,7 +238,9 @@
       "Bash(node -e \"const h=require\\('fs'\\).readFileSync\\('index.html','utf8'\\); const m=[...h.matchAll\\(/<script>\\([\\\\s\\\\S]*?\\)<\\\\/script>/g\\)]; let e=0; m.forEach\\(\\(s,i\\)=>{try{new Function\\(s[1]\\);}catch\\(x\\){e++;console.log\\('FONTS#'+i+': '+x.message\\);}}\\); console.log\\('FONTS errors:',e\\);\")",
       "Bash(perl -0pi -e 's/\\\\$3,500,000/\\\\$3,158,000/g' index.html)",
       "WebFetch(domain:nominatim.openstreetmap.org)",
-      "Bash(git -c user.email=v.dubovik77@gmail.com -c 'user.name=Viacheslav Dubovyk' commit -m 'tour maps: geocode all parks & supermarkets to real coordinates *)"
+      "Bash(git -c user.email=v.dubovik77@gmail.com -c 'user.name=Viacheslav Dubovyk' commit -m 'tour maps: geocode all parks & supermarkets to real coordinates *)",
+      "Bash(curl -s -m 25 https://bellshire-backend.onrender.com/health)",
+      "Bash(curl -s -o /tmp/p.html -w '%{http_code}' -m 25 __TRACKED_VAR__/)"
     ]
   }
 }
