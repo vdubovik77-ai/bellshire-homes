@@ -2790,6 +2790,20 @@ body:has(#video-modal.active) #ai-overlay-close { display:flex; }
 
   .tour-map { grid-area:map; border-radius:18px; overflow:hidden; height:280px; background:#0f1416; }
   .tour-map .leaflet-container { background:#0f1416; cursor:grab; }
+  /* Dark / Light / Satellite tile switcher */
+  .tour-map-switch {
+    display:flex; gap:3px; padding:3px;
+    background:rgba(15,22,26,.88); border:1px solid rgba(255,255,255,.16);
+    border-radius:9px; backdrop-filter:blur(8px); box-shadow:0 3px 12px rgba(0,0,0,.4);
+  }
+  .tour-map-switch button {
+    border:0; background:transparent; color:rgba(255,255,255,.72); cursor:pointer;
+    font-family:'General Sans','Inter',sans-serif; font-size:.6rem; font-weight:600;
+    letter-spacing:.06em; text-transform:uppercase; padding:.32rem .55rem; border-radius:6px;
+    transition:background .18s, color .18s;
+  }
+  .tour-map-switch button:hover { color:#fff; background:rgba(255,255,255,.08); }
+  .tour-map-switch button.active { background:#4a9e95; color:#fff; }
   .tour-map .leaflet-container:active { cursor:grabbing; }
   /* Let the marker label pill size to its content (Leaflet's divIcon defaults to a
      12×12 box, which was clipping the address text — making it unreadable). */
@@ -8687,9 +8701,14 @@ function tourUpdateMap(mapData) {
       zoomControl: true, scrollWheelZoom: true, dragging: true, attributionControl: false,
       center: center, zoom: zoom
     });
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
-      maxZoom: 19, subdomains: 'abcd', tileSize: 256, crossOrigin: true
-    }).addTo(TOUR.map);
+    TOUR.baseLayers = {
+      dark:  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',  { maxZoom: 19, subdomains: 'abcd', tileSize: 256, crossOrigin: true }),
+      light: L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', { maxZoom: 19, subdomains: 'abcd', tileSize: 256, crossOrigin: true }),
+      sat:   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, crossOrigin: true })
+    };
+    TOUR.mapStyle = 'dark';
+    TOUR.baseLayers.dark.addTo(TOUR.map);
+    tourAddMapSwitch();
   }
   TOUR.markers.forEach(function(m){ TOUR.map.removeLayer(m); });
   TOUR.markers = [];
@@ -8731,6 +8750,41 @@ function tourUpdateMap(mapData) {
     }
   }
   setTimeout(function(){ settle(0); }, 200);
+}
+
+// Map style switcher (Dark / Light / Satellite) — a small Leaflet control
+function tourAddMapSwitch() {
+  if (!TOUR.map || TOUR.mapSwitchCtrl) return;
+  var labels = { dark: 'Dark', light: 'Light', sat: 'Satellite' };
+  var Ctrl = L.Control.extend({
+    options: { position: 'topright' },
+    onAdd: function() {
+      var d = L.DomUtil.create('div', 'tour-map-switch');
+      d.innerHTML = ['dark', 'light', 'sat'].map(function(k) {
+        return '<button type="button" data-style="' + k + '"' + (k === TOUR.mapStyle ? ' class="active"' : '') + '>' + labels[k] + '</button>';
+      }).join('');
+      L.DomEvent.disableClickPropagation(d);
+      L.DomEvent.disableScrollPropagation(d);
+      d.addEventListener('click', function(e) {
+        var b = e.target.closest('button');
+        if (b) tourSetMapStyle(b.getAttribute('data-style'));
+      });
+      return d;
+    }
+  });
+  TOUR.mapSwitchCtrl = new Ctrl();
+  TOUR.map.addControl(TOUR.mapSwitchCtrl);
+}
+function tourSetMapStyle(name) {
+  if (!TOUR.map || !TOUR.baseLayers || !TOUR.baseLayers[name] || TOUR.mapStyle === name) return;
+  TOUR.map.removeLayer(TOUR.baseLayers[TOUR.mapStyle]);
+  TOUR.baseLayers[name].addTo(TOUR.map);
+  TOUR.mapStyle = name;
+  // On a light/satellite base, give the map container a light background so loading tiles match
+  var el = document.getElementById('tour-map');
+  if (el) el.style.background = (name === 'dark') ? '#0f1416' : (name === 'light' ? '#e8e8e8' : '#1a1a1a');
+  var btns = document.querySelectorAll('.tour-map-switch button');
+  for (var i = 0; i < btns.length; i++) btns[i].classList.toggle('active', btns[i].getAttribute('data-style') === name);
 }
 
 // Close on Escape
