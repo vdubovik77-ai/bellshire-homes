@@ -2804,6 +2804,7 @@ body:has(#video-modal.active) #ai-overlay-close { display:flex; }
   }
   .tour-map-switch button:hover { color:#fff; background:rgba(255,255,255,.08); }
   .tour-map-switch button.active { background:#4a9e95; color:#fff; }
+  .tour-map-switch .tour-map-parcels { border-left:1px solid rgba(255,255,255,.2); margin-left:3px; padding-left:.55rem; }
   .tour-map .leaflet-container:active { cursor:grabbing; }
   /* Let the marker label pill size to its content (Leaflet's divIcon defaults to a
      12×12 box, which was clipping the address text — making it unreadable). */
@@ -4079,13 +4080,33 @@ body:has(#video-modal.active) #ai-overlay-close { display:flex; }
     scrollWheelZoom: true
   });
 
-  // Base tiles with a Dark / Light / Satellite switcher
+  // Parcel-boundary overlay factory — King County GIS parcels, exported per tile
+  // (transparent PNG over whatever base is active). Shared by every map.
+  if (!window.makeParcelLayer) {
+    window.makeParcelLayer = function() {
+      var P = L.TileLayer.extend({
+        getTileUrl: function(coords) {
+          var ts = this.getTileSize(), m = this._map;
+          var nw = m.unproject(coords.scaleBy(ts), coords.z);
+          var se = m.unproject(coords.scaleBy(ts).add(ts), coords.z);
+          var a = L.CRS.EPSG3857.project(nw), b = L.CRS.EPSG3857.project(se);
+          var bbox = [Math.min(a.x,b.x), Math.min(a.y,b.y), Math.max(a.x,b.x), Math.max(a.y,b.y)].join(',');
+          return 'https://gismaps.kingcounty.gov/arcgis/rest/services/Property/KingCo_Parcels/MapServer/export'
+               + '?bbox=' + bbox + '&bboxSR=3857&imageSR=3857&size=256,256&dpi=96&format=png32&transparent=true&f=image';
+        }
+      });
+      return new P('', { maxZoom: 19, opacity: 0.9, attribution: '&copy; King County GIS' });
+    };
+  }
+
+  // Base tiles with a Dark / Light / Satellite switcher + a Parcels overlay toggle
   var mapBaseLayers = {
     dark:  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',  { attribution:'&copy; OSM &copy; CARTO', maxZoom:19, detectRetina:false, tileSize:256, subdomains:'abcd' }),
     light: L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', { attribution:'&copy; OSM &copy; CARTO', maxZoom:19, detectRetina:false, tileSize:256, subdomains:'abcd' }),
     sat:   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution:'&copy; Esri', maxZoom:19 })
   };
   var mapStyle = 'dark';
+  var mapParcels = null;
   mapBaseLayers.dark.addTo(map);
   (function addMainMapSwitch(){
     var labels = { dark:'Dark', light:'Light', sat:'Satellite' };
@@ -4095,16 +4116,22 @@ body:has(#video-modal.active) #ai-overlay-close { display:flex; }
         var d = L.DomUtil.create('div', 'tour-map-switch');
         d.innerHTML = ['dark','light','sat'].map(function(k){
           return '<button type="button" data-style="'+k+'"'+(k===mapStyle?' class="active"':'')+'>'+labels[k]+'</button>';
-        }).join('');
+        }).join('') + '<button type="button" data-style="parcels" class="tour-map-parcels" title="Lot boundaries">Parcels</button>';
         L.DomEvent.disableClickPropagation(d); L.DomEvent.disableScrollPropagation(d);
         d.addEventListener('click', function(e){
           var b = e.target.closest('button'); if (!b) return;
           var name = b.getAttribute('data-style');
+          if (name === 'parcels') {
+            if (!mapParcels) mapParcels = window.makeParcelLayer();
+            if (map.hasLayer(mapParcels)) { map.removeLayer(mapParcels); b.classList.remove('active'); }
+            else { mapParcels.addTo(map); b.classList.add('active'); }
+            return;
+          }
           if (name === mapStyle || !mapBaseLayers[name]) return;
           map.removeLayer(mapBaseLayers[mapStyle]); mapBaseLayers[name].addTo(map); mapStyle = name;
           var mc = document.getElementById('map'); if (mc) mc.style.background = (name==='dark')?'#0f1416':(name==='light'?'#e8e8e8':'#1a1a1a');
           var bs = d.querySelectorAll('button');
-          for (var i=0;i<bs.length;i++) bs[i].classList.toggle('active', bs[i].getAttribute('data-style')===name);
+          for (var i=0;i<bs.length;i++) { var ds=bs[i].getAttribute('data-style'); if (ds==='parcels') continue; bs[i].classList.toggle('active', ds===name); }
         });
         return d;
       }
@@ -8786,18 +8813,28 @@ function tourAddMapSwitch() {
       var d = L.DomUtil.create('div', 'tour-map-switch');
       d.innerHTML = ['dark', 'light', 'sat'].map(function(k) {
         return '<button type="button" data-style="' + k + '"' + (k === TOUR.mapStyle ? ' class="active"' : '') + '>' + labels[k] + '</button>';
-      }).join('');
+      }).join('') + '<button type="button" data-style="parcels" class="tour-map-parcels" title="Lot boundaries">Parcels</button>';
       L.DomEvent.disableClickPropagation(d);
       L.DomEvent.disableScrollPropagation(d);
       d.addEventListener('click', function(e) {
         var b = e.target.closest('button');
-        if (b) tourSetMapStyle(b.getAttribute('data-style'));
+        if (!b) return;
+        var name = b.getAttribute('data-style');
+        if (name === 'parcels') { tourToggleParcels(b); return; }
+        tourSetMapStyle(name);
       });
       return d;
     }
   });
   TOUR.mapSwitchCtrl = new Ctrl();
   TOUR.map.addControl(TOUR.mapSwitchCtrl);
+}
+function tourToggleParcels(btn) {
+  if (!TOUR.map) return;
+  if (!TOUR.parcels && window.makeParcelLayer) TOUR.parcels = window.makeParcelLayer();
+  if (!TOUR.parcels) return;
+  if (TOUR.map.hasLayer(TOUR.parcels)) { TOUR.map.removeLayer(TOUR.parcels); if (btn) btn.classList.remove('active'); }
+  else { TOUR.parcels.addTo(TOUR.map); if (btn) btn.classList.add('active'); }
 }
 function tourSetMapStyle(name) {
   if (!TOUR.map || !TOUR.baseLayers || !TOUR.baseLayers[name] || TOUR.mapStyle === name) return;
@@ -8808,7 +8845,7 @@ function tourSetMapStyle(name) {
   var el = document.getElementById('tour-map');
   if (el) el.style.background = (name === 'dark') ? '#0f1416' : (name === 'light' ? '#e8e8e8' : '#1a1a1a');
   var btns = document.querySelectorAll('.tour-map-switch button');
-  for (var i = 0; i < btns.length; i++) btns[i].classList.toggle('active', btns[i].getAttribute('data-style') === name);
+  for (var i = 0; i < btns.length; i++) { var ds = btns[i].getAttribute('data-style'); if (ds === 'parcels') continue; btns[i].classList.toggle('active', ds === name); }
 }
 
 // Close on Escape
