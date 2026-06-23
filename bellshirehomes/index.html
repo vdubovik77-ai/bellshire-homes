@@ -3825,14 +3825,38 @@ body:has(#video-modal.active) #ai-overlay-close { display:flex; }
     scrollWheelZoom: true
   });
 
-  // Dark map tiles
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
-    maxZoom: 19,
-    detectRetina: false,   // вимикаємо @2x тайли — вони викликають sub-pixel seams
-    tileSize: 256,
-    zoomOffset: 0
-  }).addTo(map);
+  // Base tiles with a Dark / Light / Satellite switcher
+  var mapBaseLayers = {
+    dark:  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',  { attribution:'&copy; OSM &copy; CARTO', maxZoom:19, detectRetina:false, tileSize:256, subdomains:'abcd' }),
+    light: L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', { attribution:'&copy; OSM &copy; CARTO', maxZoom:19, detectRetina:false, tileSize:256, subdomains:'abcd' }),
+    sat:   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution:'&copy; Esri', maxZoom:19 })
+  };
+  var mapStyle = 'dark';
+  mapBaseLayers.dark.addTo(map);
+  (function addMainMapSwitch(){
+    var labels = { dark:'Dark', light:'Light', sat:'Satellite' };
+    var Ctrl = L.Control.extend({
+      options: { position: 'bottomleft' },
+      onAdd: function() {
+        var d = L.DomUtil.create('div', 'tour-map-switch');
+        d.innerHTML = ['dark','light','sat'].map(function(k){
+          return '<button type="button" data-style="'+k+'"'+(k===mapStyle?' class="active"':'')+'>'+labels[k]+'</button>';
+        }).join('');
+        L.DomEvent.disableClickPropagation(d); L.DomEvent.disableScrollPropagation(d);
+        d.addEventListener('click', function(e){
+          var b = e.target.closest('button'); if (!b) return;
+          var name = b.getAttribute('data-style');
+          if (name === mapStyle || !mapBaseLayers[name]) return;
+          map.removeLayer(mapBaseLayers[mapStyle]); mapBaseLayers[name].addTo(map); mapStyle = name;
+          var mc = document.getElementById('map'); if (mc) mc.style.background = (name==='dark')?'#0f1416':(name==='light'?'#e8e8e8':'#1a1a1a');
+          var bs = d.querySelectorAll('button');
+          for (var i=0;i<bs.length;i++) bs[i].classList.toggle('active', bs[i].getAttribute('data-style')===name);
+        });
+        return d;
+      }
+    });
+    map.addControl(new Ctrl());
+  })();
 
   // Custom teal marker icon
   function createMarkerIcon(status) {
