@@ -4083,7 +4083,8 @@ body:has(#video-modal.active) #ai-overlay-close { display:flex; }
   // Parcel-boundary overlay factory — Regrid (Landgrid) nationwide parcel tiles,
   // globally CDN-served PNG (zoom 10-21). Works tokenless; set window.REGRID_TOKEN
   // for higher rate limits. Shared by every map on the page.
-  if (typeof window.REGRID_TOKEN === 'undefined') window.REGRID_TOKEN = '';
+  // Regrid Tiles token (client-side; protect with the token's Allowed-Domains list in the Regrid dashboard).
+  if (typeof window.REGRID_TOKEN === 'undefined') window.REGRID_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJyZWdyaWQuY29tIiwiaWF0IjoxNzgyMzcyMjg5LCJleHAiOjE3ODQ5NjQyODksInUiOjgyNDE0NCwiZyI6MjMxNTMsImNhcCI6InBhOnRzOnBzOmJmOm1hOnR5OmVvOnpvOnNiIn0.ldAHm5QBo7zNTWSHa_SEcdlCsQ5C285X42c0yAWna80';
   if (!window.makeParcelLayer) {
     window.makeParcelLayer = function() {
       var tok = window.REGRID_TOKEN ? ('?token=' + encodeURIComponent(window.REGRID_TOKEN)) : '';
