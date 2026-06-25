@@ -4080,22 +4080,17 @@ body:has(#video-modal.active) #ai-overlay-close { display:flex; }
     scrollWheelZoom: true
   });
 
-  // Parcel-boundary overlay factory — King County GIS parcels, exported per tile
-  // (transparent PNG over whatever base is active). Shared by every map.
+  // Parcel-boundary overlay factory — Regrid (Landgrid) nationwide parcel tiles,
+  // globally CDN-served PNG (zoom 10-21). Works tokenless; set window.REGRID_TOKEN
+  // for higher rate limits. Shared by every map on the page.
+  if (typeof window.REGRID_TOKEN === 'undefined') window.REGRID_TOKEN = '';
   if (!window.makeParcelLayer) {
     window.makeParcelLayer = function() {
-      var P = L.TileLayer.extend({
-        getTileUrl: function(coords) {
-          var ts = this.getTileSize(), m = this._map;
-          var nw = m.unproject(coords.scaleBy(ts), coords.z);
-          var se = m.unproject(coords.scaleBy(ts).add(ts), coords.z);
-          var a = L.CRS.EPSG3857.project(nw), b = L.CRS.EPSG3857.project(se);
-          var bbox = [Math.min(a.x,b.x), Math.min(a.y,b.y), Math.max(a.x,b.x), Math.max(a.y,b.y)].join(',');
-          return 'https://gismaps.kingcounty.gov/arcgis/rest/services/Property/KingCo_Parcels/MapServer/export'
-               + '?bbox=' + bbox + '&bboxSR=3857&imageSR=3857&size=256,256&dpi=96&format=png32&transparent=true&f=image';
-        }
+      var tok = window.REGRID_TOKEN ? ('?token=' + encodeURIComponent(window.REGRID_TOKEN)) : '';
+      return L.tileLayer('https://tiles.regrid.com/api/v1/parcels/{z}/{x}/{y}.png' + tok, {
+        minZoom: 10, maxZoom: 21, opacity: 1,
+        attribution: '&copy; <a href="https://regrid.com">Regrid</a>'
       });
-      return new P('', { maxZoom: 19, opacity: 0.9, attribution: '&copy; King County GIS' });
     };
   }
 
